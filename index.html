@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No-Touch-Register · Companion zum Buch</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{--red:#cc0000;--red-soft:#edd3d2;--ink:#1a1614;--paper:#faf8f5;--line:#d8d2ca;--muted:#6b635c;
+--veto:#cc0000;--frei:#3a7d44;--fall:#1f6f9c;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'JetBrains Mono',monospace;background:var(--paper);color:var(--ink);line-height:1.5;
+background-image:radial-gradient(var(--line) .5px,transparent .5px);background-size:22px 22px;}
+.wrap{max-width:1280px;margin:0 auto;padding:38px 20px 80px;}
+header{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:18px;}
+.kicker{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--red);font-weight:600;}
+h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4.2vw,40px);line-height:1.05;margin:8px 0 10px;}
+.sub{font-size:13px;color:var(--muted);max-width:880px;}
+.sig{color:var(--red);font-weight:600;}
+.ref{font-size:11px;color:var(--muted);font-style:italic;margin-top:6px;}
+h2{font-family:'Fraunces',serif;font-size:20px;margin:26px 0 6px;}
+.note{font-size:12px;color:var(--muted);margin-bottom:10px;max-width:880px;}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:12px;}
+th,td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top;}
+th{background:var(--red);color:#fff;font-weight:600;font-size:10.5px;}
+td.name{font-weight:600;min-width:150px;}
+td.name input{width:100%;border:0;font-family:inherit;font-size:12px;font-weight:600;background:transparent;color:var(--ink);}
+.txt input,.txt textarea{width:100%;border:0;font-family:inherit;font-size:11px;background:transparent;color:var(--ink);resize:vertical;}
+textarea{min-height:30px;line-height:1.45;}
+input:focus,select:focus,textarea:focus{outline:1px solid var(--red);}
+select{font-family:inherit;font-size:11px;border:1px solid var(--line);background:var(--paper);padding:3px;cursor:pointer;}
+.del{color:var(--muted);cursor:pointer;border:0;background:none;font-family:inherit;font-size:14px;}
+.del:hover{color:var(--red);}
+.btn{font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+padding:10px 15px;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;transition:.15s;}
+.btn.ghost{background:transparent;color:var(--ink);} .btn:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.addbtn{font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:7px 13px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;margin-top:10px;}
+.addbtn:hover{background:var(--ink);color:#fff;}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:24px 0 0;align-items:center;}
+.legend{font-size:11px;color:var(--muted);margin:8px 0;}
+.pill{display:inline-block;padding:1px 7px;font-weight:600;color:#fff;margin-right:3px;font-size:10px;}
+.warn{background:#fff7e6;border:1px solid #c9820a;color:#8a5a00;font-size:11.5px;padding:9px 12px;margin:10px 0;}
+details{margin:12px 0;background:#fff;border:1px solid var(--line);padding:10px 14px;}
+summary{cursor:pointer;font-weight:600;font-size:12px;}
+details p,details li{font-size:11.5px;color:var(--muted);margin-top:6px;}
+details ul{margin-left:18px;}
+footer{margin-top:34px;border-top:1px solid var(--line);padding-top:15px;font-size:11px;color:var(--muted);line-height:1.7;}
+
+/* Karten-Editor je Asset */
+.card{background:#fff;border:1px solid var(--ink);margin:14px 0;}
+.card.empty{border-style:dashed;border-color:var(--line);}
+.cardhead{display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;padding:9px 12px;}
+.cardhead .cjid{font-size:10px;letter-spacing:1px;color:var(--red-soft);font-weight:600;}
+.cardhead input{flex:1;border:0;background:transparent;color:#fff;font-family:inherit;font-weight:600;font-size:13px;}
+.cardhead input:focus{outline:1px solid var(--red);}
+.cardhead select{background:#2a2420;color:#fff;border:1px solid #4a423c;}
+.cardbody{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+@media(max-width:760px){.cardbody{grid-template-columns:1fr}}
+.fld{border:1px solid var(--line);border-top:0;padding:9px 12px;}
+.fld.full{grid-column:1/-1;}
+.fld .lbl{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;display:block;}
+.fld .lbl b{color:var(--veto);}
+.chk{display:inline-flex;align-items:center;gap:4px;font-size:11px;margin:2px 9px 2px 0;cursor:pointer;}
+.chk input{accent-color:var(--red);}
+.esc{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;}
+.esc input.role{width:140px;border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:11px;padding:3px 5px;}
+.esc input.min{width:54px;border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:11px;padding:3px 5px;text-align:center;}
+.esc input.who{width:120px;border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:11px;padding:3px 5px;}
+.esc .arrow{color:var(--muted);font-size:13px;}
+.esc .delrow{color:var(--muted);cursor:pointer;border:0;background:none;font-size:13px;}
+.miniadd{font-family:inherit;font-size:10px;letter-spacing:.4px;text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;}
+.miniadd:hover{border-color:var(--ink);color:var(--ink);}
+.raci{display:grid;grid-template-columns:auto 1fr;gap:4px 9px;font-size:11px;align-items:center;}
+.raci .r{font-weight:600;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);}
+.raci input{border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:11px;padding:3px 5px;width:100%;}
+
+/* Operativer Aushang (Druck-Endprodukt) */
+.poster{background:#fff;border:3px solid var(--ink);margin-top:8px;}
+.poster-band{background:var(--red);color:#fff;padding:11px 16px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;}
+.poster-band .t{font-family:'Fraunces',serif;font-weight:800;font-size:19px;}
+.poster-band .s{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+.poster-intro{padding:9px 16px;font-size:11px;color:var(--ink);border-bottom:1px solid var(--line);background:var(--red-soft);}
+.ptable{width:100%;border-collapse:collapse;font-size:11px;}
+.ptable th,.ptable td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left;}
+.ptable th{background:var(--ink);color:#fff;font-size:9.5px;letter-spacing:.5px;}
+.ptable td.cjname{font-weight:600;}
+.ptable .veto-list{color:var(--veto);font-weight:600;}
+.ptable .fall-txt{color:var(--fall);}
+.ptable .esc-txt b{color:var(--ink);}
+.freibox{padding:10px 16px;border-top:2px solid var(--ink);font-size:11px;}
+.freibox .h{font-weight:600;color:var(--frei);text-transform:uppercase;letter-spacing:.5px;font-size:10px;margin-bottom:5px;}
+.freibox ul{margin-left:16px;color:var(--muted);}
+.poster-foot{padding:8px 16px;border-top:1px solid var(--line);font-size:9.5px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+
+.esc input.min.bad{border-color:var(--veto);background:#fdeceb;color:var(--veto);font-weight:600;}
+.kettewarn{font-size:10.5px;color:var(--veto);margin:4px 0 2px;display:flex;align-items:center;gap:5px;}
+
+.print-only{display:none;}
+@media print{
+  body{background:none;}
+  .wrap{padding:0;max-width:none;}
+  .noprint{display:none!important;}
+  .print-only{display:block;}
+  .poster{border-width:2px;}
+  @page{margin:12mm;}
+}
+body.a3 .poster{font-size:13px;}
+@media print{body.a3 *{}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="noprint">
+  <div class="kicker">OT-Security · Companion zum Buch</div>
+  <h1>No-Touch-Register</h1>
+  <p class="sub">Die operative Schwester der Crown-Jewels-Analyse. Sie beantwortet die Frage, die in fast jedem IR-Playbook offenbleibt: <b>Wer darf im akuten OT-Vorfall was abschalten?</b> Für jedes Crown Jewel wird festgelegt, welche Maßnahmen <span class="sig">veto-pflichtig</span> sind, warum der SOC sie nicht unilateral ausführen darf, welche Eskalationskette mit welchen Fristen gilt und welche sichere Rückfall-Aktion bei Fristablauf greift. <span class="sig">§</span> Alles bleibt im Browser.</p>
+  <p class="ref">Methodik nach „ISMS für die Industrie“, Kap. 9.3 (No-Touch-Register, Tab. 9.1), 9.4 (RACI für Containment) und 9.5 (Eskalationskette mit Zeitfenstern).</p>
+</header>
+
+<details class="noprint">
+<summary>Das Containment-Paradox & die Logik des Registers (lesen)</summary>
+<p><b>Containment-Paradox (Kap. 9.1):</b> In der IT begrenzt der Reflex „im Zweifel isolieren“ den Schaden. In der OT kann genau dieser Reflex den Schaden erst auslösen — eine isolierte SPS in einem kontinuierlichen Prozess kann eine Charge zerstören oder einen Reaktor in einen unsicheren Zustand bringen. Die Containment-Maßnahme wird dann selbst zum Schadensereignis.</p>
+<p><b>Zwei Maßnahmenklassen (Kap. 9.3):</b></p>
+<ul>
+<li><b style="color:var(--frei)">Vorab freigegeben</b> — reversible Aktionen ohne direkten Prozesseingriff (Monitoring vertiefen, Logs sichern, forensische Images, Sperrung kompromittierter Benutzerkonten, Isolation benachbarter IT-Systeme außerhalb des OT-Datenpfads). Der SOC führt sie eigenständig aus. <i>Diese Klasse bleibt schnell.</i></li>
+<li><b style="color:var(--veto)">Veto-pflichtig</b> — Aktionen am Asset selbst, die den physischen Prozess beeinflussen können (Netzwerk-Isolation, Service-Restart, Account-Lockout von Service-Konten, Konfigurations-/Firmware-Aktion). Erfordern die ausdrückliche Bestätigung einer benannten Rolle aus dem Anlagenbetrieb.</li>
+</ul>
+<p><b>Kein bürokratisches Genehmigungsverfahren, sondern ein Stopp im Playbook (Kap. 9.3/9.5):</b> Der SOC-Analyst stößt auf einen Checkpoint, die zuständige Rolle wird nach definierter Kette gerufen, die Uhr läuft gegen <i>harte Zeitfenster</i> — nicht gegen das Urteil eines einzelnen Analysten. Läuft das Fenster ab, greift die vorab abgestimmte Sicherer-Zustand-Aktion, nicht die unilaterale Isolation.</p>
+<p><b>RACI je veto-pflichtiger Maßnahme (Kap. 9.4):</b> Accountable = Asset Owner / Werksleiter · Responsible = SOC · Consulted = CISO / ISB · Informed = Geschäftsleitung.</p>
+</details>
+
+<h2 class="noprint">Schritt 1 — Crown Jewels übernehmen</h2>
+<p class="note">Das No-Touch-Register ist keine separate Datenbasis. Es ist dieselbe Crown-Jewels-Liste, ergänzt um die Veto-Steuerung (Kap. 9.3). Übernehmen Sie die Crown Jewels direkt aus dem Crown-Jewels-Tool (JSON-Import — es werden nur Assets mit der Klassifikation „Crown Jewel“ übernommen) oder legen Sie 3–5 kritische Assets manuell an. Mehr als fünf sollten es im Regelfall nicht sein.</p>
+<div class="toolbar noprint" style="margin-top:0">
+  <button class="btn ghost" onclick="document.getElementById('cjfile').click()">Crown-Jewels-JSON importieren</button>
+  <input type="file" id="cjfile" accept=".json" style="display:none" onchange="importCrownJewels(event)">
+  <button class="addbtn" style="margin-top:0" onclick="addAsset()">+ Asset manuell</button>
+  <span id="impMsg" class="legend" style="margin:0"></span>
+</div>
+
+<div id="overWarn" class="noprint"></div>
+
+<h2 class="noprint">Schritt 2 — No-Touch-Definition je Asset</h2>
+<p class="note">Vorlage Tab. 9.1: veto-pflichtige Maßnahme, Begründung des Vetos, sicherer Rückfall, Eskalationskette mit Fristen. Die voreingestellte Kette (Schichtleiter 5 Min → Leittechniker 10 Min → Werksleiter 15 Min → Rückfall) stammt aus Kap. 9.5 und ist je Asset anzupassen. Tragen Sie die <b>namentlich benannten</b> Rollen ein — anonyme Rollen sind im Vorfall wertlos.</p>
+<div id="cards"></div>
+
+<h2 class="noprint">Schritt 3 — Operativer Aushang</h2>
+<p class="note">Das Endprodukt: eine einseitige Übersicht, die im SOC, in der Leitwarte und am Arbeitsplatz des OT Security Lead sichtbar ausliegt (Kap. 9.3) — physisch ausgehängt oder als Sperrbildschirm. Druckansicht für Wand-Aushang in <b>A3 quer</b> empfohlen; im Audit gilt die im SOC sichtbare Variante als operativer Beleg.</p>
+
+<div class="print-only" style="text-align:center;font-size:10px;color:#000;margin-bottom:4px;">No-Touch-Register · operativer Aushang · generiert mit dem Companion zum Buch „ISMS für die Industrie“</div>
+<div class="poster" id="poster"></div>
+
+<div class="warn noprint" style="margin-top:22px;border-color:var(--red);background:#fdeceb;">
+  <b>⚠ Der Wert liegt nicht in der Grafik, sondern in der Disziplin davor (Kap. 9.3/9.4).</b>
+  Dieses Werkzeug ist das sichtbare Endprodukt eines methodisch sauberen Prozesses — nicht der Prozess selbst. Wer welches Asset mit welcher Frist und welchem benannten Eskalations-Empfänger auf die Liste setzt, ist Ergebnis der Crown-Jewels-Analyse (Kap. 3.5), eines Workshops mit der Anlagenleitung (Kap. 9.6, Schritt 1) und der RACI-Entscheidungen (Kap. 9.4). Ein ausgefüllter Aushang ohne diesen vorausgehenden Abgleich erzeugt Scheinsicherheit. Der zweite, ebenso wichtige Schritt: den Stopp im real ausgeführten IR-Playbook verankern (Kap. 9.6, Schritt 2) und die OT-Spalte der RACI-Matrix korrigieren (Schritt 3).
+</div>
+
+<div class="toolbar noprint">
+  <button class="btn ghost" onclick="saveJSON()">Speichern (JSON)</button>
+  <button class="btn ghost" onclick="document.getElementById('file').click()">Laden (JSON)</button>
+  <input type="file" id="file" accept=".json" style="display:none" onchange="loadJSON(event)">
+  <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+  <button class="btn ghost" onclick="toggleA3()">A3-quer: <span id="a3state">aus</span></button>
+  <button class="btn" onclick="window.print()">Aushang drucken / PDF</button>
+</div>
+
+<footer class="noprint">
+  Methodik nach „ISMS für die Industrie“, Kap. 9. Veto-pflichtig ist ausschließlich die schmale Klasse von Maßnahmen, die einen ungeplanten Stillstand eines kontinuierlichen Prozesses auslösen können — Detektion, Analyse, Beweissicherung und Monitoring-Verstärkung bleiben jederzeit beim SOC (Kap. 9.5).
+  Schnittstellen: Kap. 3.5 (Crown-Jewels-Analyse, Datenbasis), Kap. 8 (Vorfallmanagement, gespiegelte Eskalationsketten), Kap. 24.3 (Island-Mode als Voraussetzung für definierte Sicherer-Zustand-Aktionen).<br>
+  Begleitwerkzeug zur Workshop-Strukturierung — ersetzt nicht den Workshop mit Anlagenleitung, SOC und ISMS-Verantwortlichen.<br>
+  <span class="sig">§</span> Sabine Frömling — Independent OT-Security &amp; Compliance Advisory.
+</footer>
+</div>
+
+<script>
+/* ---- Stammdaten / Vorauswahlen aus dem Buch (Kap. 9.3 / Tab. 9.1) ---- */
+const TYP=["SCADA","DCS","SPS","Schutzrelais","SIS","HMI","Historian","Engineering-WS","Netzwerk","Datenbank","Sonstiges"];
+const VETO_MASSN=[
+  "Netzwerk-Isolation des Assets","Service-Restart","Account-Lockout (Service-Konten)",
+  "Konfigurationsänderung","Firmware-Aktion","SPS-Programm-Änderung",
+  "Trennung vom Stationsbus","Schreibzugriff sperren"
+];
+const VETO_GRUND=[
+  "Operator verliert Sichtbarkeit (blinde Anlagenführung)",
+  "Gefahr für Safety / letzte Schutzschicht",
+  "Kontinuierlicher Prozess lässt sich nicht einfach stoppen",
+  "Kaskadierung im Verbund möglich",
+  "Verlust regulatorischer Datenstrom / Meldepflicht"
+];
+const FALLBACK=[
+  "Umschalten auf redundanten Master","Letzten gültigen Zustand halten",
+  "Wechsel auf Reserve-Schutzschema","Schreibsperre + Logsicherung",
+  "Lokale Pufferung an Quell-SPS (kein Eingriff stromaufwärts)",
+  "Manueller Operator-Eingriff",
+  "Keine Isolation — Schichtleiter bestätigt sicheren Zustand"
+];
+const VORAB_FREI=[
+  "Monitoring-Tiefe erhöhen","Logdaten sichern","Forensische Bildaufnahme",
+  "Isolation benachbarter IT-Systeme (nicht im OT-Datenpfad)","Sperrung kompromittierter Benutzerkonten"
+];
+
+let assets=[];
+function uid(){return crypto.randomUUID();}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+function defAsset(n){return {
+  id:uid(), name:n||"Neues Asset", typ:"SCADA", rto:"< 5 Min",
+  veto:[], vetoFree:"", gruende:[], gruendeFree:"",
+  fallback:[], fallbackFree:"",
+  // Eskalationskette: Liste {role, min, who}
+  kette:[{role:"Schichtleiter",min:"5",who:""},{role:"Leittechniker",min:"10",who:""},{role:"Werksleiter",min:"15",who:""}],
+  // RACI (Kap. 9.4)
+  acc:"", resp:"SOC", cons:"", inf:"Geschäftsleitung"
+};}
+
+/* ---- Crown-Jewels-Klassifikation (identisch zum Schwester-Tool, Buch 3.5.2) ---- */
+const CRIT=["phys","econ","reg","dep","rto"];
+function count4(a){return CRIT.reduce((n,k)=>n+(a[k]===4?1:0),0);}
+function isCrownJewel(a){return count4(a)>=2;}
+
+function importCrownJewels(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      const src=(d.assets||[]).filter(isCrownJewel);
+      if(!src.length){document.getElementById('impMsg').textContent='Keine Crown Jewels (4 in ≥2 Kriterien) in der Datei gefunden.';return;}
+      src.forEach(s=>{
+        const a=defAsset(s.name);
+        a.typ = TYP.includes(s.typ)?s.typ:"Sonstiges";
+        if(s.rtoVal) a.rto=s.rtoVal;
+        a.acc = s.owner || "";
+        assets.push(a);
+      });
+      document.getElementById('impMsg').textContent=src.length+' Crown Jewel(s) übernommen. RTO, Typ und Asset Owner vorbefüllt — Veto-Felder ergänzen.';
+      render();
+    }catch(err){alert('Datei nicht lesbar.');}
+  };
+  r.readAsText(f);
+  e.target.value='';
+}
+
+/* ---- Fristen-Validierung: numerisch + monoton steigend ---- */
+function ketteIssues(a){
+  const out=[]; let prev=null;
+  a.kette.forEach((k,ki)=>{
+    const raw=(k.min==null?'':String(k.min)).trim();
+    if(raw===''){out[ki]=null;return;}
+    const n=Number(raw.replace(',','.'));
+    if(!isFinite(n)){out[ki]='nan';return;}
+    if(prev!==null && n<=prev){out[ki]='order';} else {out[ki]=null;}
+    prev=n;
+  });
+  return out;
+}
+
+/* ---- Editor-Rendering ---- */
+function render(){
+  const wrap=document.getElementById('cards');
+  wrap.innerHTML='';
+  if(!assets.length){
+    wrap.innerHTML='<div class="card empty"><div class="fld full" style="border-top:1px solid var(--line);color:var(--muted);font-size:12px;">Noch keine Assets. Crown Jewels importieren oder manuell anlegen — Ziel sind 3–5 kritische Assets.</div></div>';
+  }
+  assets.forEach((a,i)=>{
+    const cjid="CJ-"+String(i+1).padStart(3,'0');
+    const card=document.createElement('div');card.className='card';
+    let h=`<div class="cardhead">
+      <span class="cjid">${cjid}</span>
+      <input value="${esc(a.name)}" onchange="upd(${i},'name',this.value)">
+      <select onchange="upd(${i},'typ',this.value)">${TYP.map(t=>`<option ${a.typ===t?'selected':''}>${t}</option>`).join('')}</select>
+      <button class="del" title="Entfernen" onclick="del(${i})">✕</button>
+    </div><div class="cardbody">`;
+
+    // RTO-Ziel
+    h+=`<div class="fld"><span class="lbl">RTO-Ziel</span>
+      <div class="txt"><input value="${esc(a.rto)}" placeholder="z. B. < 5 Min" onchange="upd(${i},'rto',this.value)"></div></div>`;
+
+    // Veto-pflichtige Maßnahme
+    h+=`<div class="fld"><span class="lbl"><b>Veto-pflichtige Maßnahme</b></span>`;
+    VETO_MASSN.forEach(m=>{h+=`<label class="chk"><input type="checkbox" ${a.veto.includes(m)?'checked':''} onchange="toggleArr(${i},'veto','${esc(m)}',this.checked)">${esc(m)}</label>`;});
+    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.vetoFree)}" placeholder="weitere…" onchange="upd(${i},'vetoFree',this.value)"></div></div>`;
+
+    // Warum kein unilateraler SOC-Zugriff
+    h+=`<div class="fld"><span class="lbl">Warum kein unilateraler SOC-Zugriff?</span>`;
+    VETO_GRUND.forEach(g=>{h+=`<label class="chk"><input type="checkbox" ${a.gruende.includes(g)?'checked':''} onchange="toggleArr(${i},'gruende','${esc(g)}',this.checked)">${esc(g)}</label>`;});
+    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.gruendeFree)}" placeholder="weitere…" onchange="upd(${i},'gruendeFree',this.value)"></div></div>`;
+
+    // Sicherer Rückfall
+    h+=`<div class="fld"><span class="lbl">Sicherer Rückfall / Notfall-Aktion</span>`;
+    FALLBACK.forEach(fb=>{h+=`<label class="chk"><input type="checkbox" ${a.fallback.includes(fb)?'checked':''} onchange="toggleArr(${i},'fallback','${esc(fb)}',this.checked)">${esc(fb)}</label>`;});
+    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.fallbackFree)}" placeholder="weitere…" onchange="upd(${i},'fallbackFree',this.value)"></div></div>`;
+
+    // Eskalationskette (mit Fristen-Validierung: numerisch + monoton steigend)
+    const issues=ketteIssues(a);
+    h+=`<div class="fld full"><span class="lbl">Eskalationskette &amp; Zeitfenster (Rolle · Frist in Min · namentlich)</span>`;
+    a.kette.forEach((k,ki)=>{
+      const bad=issues[ki]?' bad':'';
+      h+=`<div class="esc">
+        ${ki>0?'<span class="arrow">→</span>':''}
+        <input class="role" value="${esc(k.role)}" placeholder="Rolle" onchange="updKette(${i},${ki},'role',this.value)">
+        <input class="min${bad}" value="${esc(k.min)}" placeholder="Min" title="${issues[ki]==='nan'?'Frist muss numerisch sein':(issues[ki]==='order'?'Frist muss größer sein als die vorige Stufe':'')}" onchange="updKette(${i},${ki},'min',this.value)">
+        <span style="font-size:10px;color:var(--muted)">Min</span>
+        <input class="who" value="${esc(k.who)}" placeholder="Name" onchange="updKette(${i},${ki},'who',this.value)">
+        <button class="delrow" title="Stufe entfernen" onclick="delKette(${i},${ki})">✕</button>
+      </div>`;
+    });
+    if(issues.some(x=>x)){
+      const hasNan=issues.includes('nan'), hasOrd=issues.includes('order');
+      const msg=[hasNan?'Frist muss numerisch sein':null,hasOrd?'Fristen müssen monoton steigen (z. B. 5 → 10 → 15)':null].filter(Boolean).join(' · ');
+      h+=`<div class="kettewarn">⚠ ${msg}</div>`;
+    }
+    h+=`<div class="esc"><span class="arrow">→</span><span style="font-size:11px;color:var(--veto);font-weight:600">danach: sicherer Rückfall (s. o.)</span></div>`;
+    h+=`<button class="miniadd" onclick="addKette(${i})">+ Stufe</button></div>`;
+
+    // RACI
+    h+=`<div class="fld full"><span class="lbl">RACI für diese Containment-Entscheidung (Kap. 9.4)</span>
+      <div class="raci">
+        <span class="r" title="Accountable">A · Accountable</span><input value="${esc(a.acc)}" placeholder="Asset Owner / Werksleiter" onchange="upd(${i},'acc',this.value)">
+        <span class="r" title="Responsible">R · Responsible</span><input value="${esc(a.resp)}" placeholder="SOC" onchange="upd(${i},'resp',this.value)">
+        <span class="r" title="Consulted">C · Consulted</span><input value="${esc(a.cons)}" placeholder="CISO / ISB" onchange="upd(${i},'cons',this.value)">
+        <span class="r" title="Informed">I · Informed</span><input value="${esc(a.inf)}" placeholder="Geschäftsleitung" onchange="upd(${i},'inf',this.value)">
+      </div></div>`;
+
+    h+=`</div>`;
+    card.innerHTML=h;
+    wrap.appendChild(card);
+  });
+  renderWarn();
+  renderPoster();
+}
+
+function renderWarn(){
+  const w=document.getElementById('overWarn');
+  if(assets.length>5){
+    w.innerHTML=`<div class="warn">⚠ ${assets.length} Assets im Register. Das No-Touch-Register umfasst im typischen Anlagenbetrieb drei bis fünf Crown Jewels (Kap. 9.5). Je größer die veto-pflichtige Klasse, desto eher trägt der Einwand „Veto-Recht als Geschwindigkeitsbremse“. Prüfen Sie, ob die Liste zu großzügig ist.</div>`;
+  } else w.innerHTML='';
+}
+
+/* ---- Operativer Aushang ---- */
+function joinList(arr,free){
+  const a=[...arr]; if(free&&free.trim())a.push(free.trim());
+  return a.length?a.join(' · '):'—';
+}
+function ketteText(a){
+  const parts=a.kette.filter(k=>k.role||k.min).map(k=>{
+    const who=k.who&&k.who.trim()?` (${esc(k.who.trim())})`:'';
+    return `<b>${esc(k.role||'?')}</b>${who} ${esc(k.min||'?')} Min`;
+  });
+  parts.push('<b style="color:var(--veto)">danach Rückfall</b>');
+  return parts.join(' → ');
+}
+function renderPoster(){
+  const p=document.getElementById('poster');
+  const date=new Date().toLocaleDateString('de-DE');
+  let rows='';
+  if(!assets.length){
+    rows=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px;">Noch keine Crown Jewels erfasst.</td></tr>`;
+  } else {
+    assets.forEach((a,i)=>{
+      const cjid="CJ-"+String(i+1).padStart(3,'0');
+      const raci=`A: ${esc(a.acc||'—')} · R: ${esc(a.resp||'—')} · C: ${esc(a.cons||'—')} · I: ${esc(a.inf||'—')}`;
+      rows+=`<tr>
+        <td class="cjname">${cjid} · ${esc(a.name)}<div style="font-weight:400;color:var(--muted);font-size:9.5px;margin-top:3px">${esc(a.typ)} · RTO-Ziel ${esc(a.rto||'—')}</div>
+          <div style="font-weight:400;color:var(--muted);font-size:9px;margin-top:3px">${raci}</div></td>
+        <td class="veto-list">${joinList(a.veto,a.vetoFree)}</td>
+        <td>${joinList(a.gruende,a.gruendeFree)}</td>
+        <td class="esc-txt">${ketteText(a)}</td>
+        <td class="fall-txt">${joinList(a.fallback,a.fallbackFree)}</td>
+      </tr>`;
+    });
+  }
+  p.innerHTML=`
+    <div class="poster-band">
+      <span class="t">No-Touch-Register</span>
+      <span class="s">Nicht ohne Freigabe des Anlagenbetriebs anrühren</span>
+    </div>
+    <div class="poster-intro"><b>Stopp im Playbook:</b> Die unten gelisteten Maßnahmen darf der SOC an diesen Assets <b>nicht eigenständig</b> ausführen. Benannte Rolle nach Eskalationskette rufen. Läuft die Frist ohne Antwort ab, greift der hinterlegte sichere Rückfall — keine unilaterale Isolation.</div>
+    <table class="ptable">
+      <thead><tr>
+        <th style="width:21%">Crown Jewel (RACI)</th>
+        <th style="width:19%">Veto-pflichtige Maßnahme</th>
+        <th style="width:20%">Warum kein Alleingang</th>
+        <th style="width:21%">Eskalationskette &amp; Fristen</th>
+        <th style="width:19%">Sicherer Rückfall</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="freibox">
+      <div class="h">Vorab freigegeben — SOC handelt eigenständig, ohne Veto</div>
+      <ul>${VORAB_FREI.map(v=>`<li>${esc(v)}</li>`).join('')}</ul>
+    </div>
+    <div class="poster-foot">
+      <span>Methodik: „ISMS für die Industrie“, Kap. 9.3–9.5 · RACI je Maßnahme nach Kap. 9.4<br><b style="color:var(--veto)">Sicherer Rückfall setzt autarken Inselbetrieb voraus → Island-Mode dokumentiert? (Kap. 24.3)</b></span>
+      <span>Stand: ${date} · sichtbar aushängen in SOC / Leitwarte / OT Security Lead</span>
+    </div>`;
+}
+
+/* ---- Mutationen ---- */
+function upd(i,k,v){assets[i][k]=v;render();}
+function toggleArr(i,key,val,on){
+  const arr=assets[i][key];
+  const idx=arr.indexOf(val);
+  if(on&&idx<0)arr.push(val);
+  if(!on&&idx>=0)arr.splice(idx,1);
+  render();
+}
+function updKette(i,ki,k,v){assets[i].kette[ki][k]=v;render();}
+function addKette(i){assets[i].kette.push({role:"",min:"",who:""});render();}
+function delKette(i,ki){assets[i].kette.splice(ki,1);render();}
+function del(i){assets.splice(i,1);render();}
+function addAsset(){assets.push(defAsset("Asset "+(assets.length+1)));render();}
+
+/* ---- Persistenz / Export ---- */
+function saveJSON(){
+  const blob=new Blob([JSON.stringify({assets},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='no-touch-register.json';a.click();
+}
+function loadJSON(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.assets){assets=d.assets;render();}}catch(err){alert('Datei nicht lesbar.');}};
+  r.readAsText(f);e.target.value='';
+}
+function exportCSV(){
+  const head=["ID","Asset","Typ","RTO-Ziel","Veto-pflichtige Maßnahme","Warum kein Alleingang","Eskalationskette","Sicherer Rückfall","Accountable","Responsible","Consulted","Informed"];
+  const rows=assets.map((a,i)=>{
+    const kette=a.kette.filter(k=>k.role||k.min).map(k=>`${k.role}${k.who?' ('+k.who+')':''} ${k.min}Min`).join(" -> ")+" -> Rückfall";
+    return ["CJ-"+String(i+1).padStart(3,'0'),a.name,a.typ,a.rto,
+      joinPlain(a.veto,a.vetoFree),joinPlain(a.gruende,a.gruendeFree),kette,joinPlain(a.fallback,a.fallbackFree),
+      a.acc,a.resp,a.cons,a.inf];
+  });
+  const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(";")).join("\n");
+  // Vorab freigegebene Maßnahmen (global, SOC-eigenständig) für vollständigen Audit-Export anhängen
+  const freiBlock="\n\n"+[["Vorab freigegebene Maßnahme (SOC eigenständig, ohne Veto)"],...VORAB_FREI.map(v=>[v])]
+    .map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const blob=new Blob(["\ufeff"+csv+freiBlock],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='no-touch-register.csv';a.click();
+}
+function joinPlain(arr,free){const a=[...arr];if(free&&free.trim())a.push(free.trim());return a.join(" | ");}
+
+function toggleA3(){
+  document.body.classList.toggle('a3');
+  const on=document.body.classList.contains('a3');
+  document.getElementById('a3state').textContent=on?'an':'aus';
+  // @page-Größe dynamisch setzen
+  let st=document.getElementById('a3page');
+  if(on){
+    if(!st){st=document.createElement('style');st.id='a3page';document.head.appendChild(st);}
+    st.textContent='@media print{@page{size:A3 landscape;margin:10mm;}}';
+  } else if(st){st.remove();}
+}
+
+/* ---- Seed: an Tab. 9.1 orientiert ---- */
+function seed(){
+  const s1=defAsset("SCADA-Master-Server");
+  s1.typ="SCADA";s1.rto="< 5 Min";
+  s1.veto=["Netzwerk-Isolation des Assets","Service-Restart","Account-Lockout (Service-Konten)"];
+  s1.gruende=["Operator verliert Sichtbarkeit (blinde Anlagenführung)"];
+  s1.fallback=["Umschalten auf redundanten Master","Schreibsperre + Logsicherung"];
+  s1.acc="Werksleiter";
+
+  const s2=defAsset("Sicherheitsgerichtetes System (SIS)");
+  s2.typ="SIS";s2.rto="≈ 0 Min";
+  s2.veto=["Konfigurationsänderung","Account-Lockout (Service-Konten)"];s2.vetoFree="jede Veränderung von Netzwerkpfad oder Anmeldedaten";
+  s2.gruende=["Gefahr für Safety / letzte Schutzschicht"];
+  s2.fallback=["Keine Isolation — Schichtleiter bestätigt sicheren Zustand"];
+  s2.kette=[{role:"Schichtleiter",min:"2",who:""},{role:"Leittechniker",min:"5",who:""}];
+  s2.acc="Werksleiter";s2.cons="CISO";
+
+  const s3=defAsset("DCS-Controller (kontinuierl. Prozess)");
+  s3.typ="DCS";s3.rto="< 5 Min";
+  s3.veto=["Service-Restart","Netzwerk-Isolation des Assets","Konfigurationsänderung"];
+  s3.gruende=["Kontinuierlicher Prozess lässt sich nicht einfach stoppen"];
+  s3.fallback=["Letzten gültigen Zustand halten","Manueller Operator-Eingriff"];
+  s3.acc="Werksleiter";
+
+  assets=[s1,s2,s3];
+}
+seed();
+render();
+</script>
+</body>
+</html>

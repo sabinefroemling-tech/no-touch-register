@@ -1,0 +1,41 @@
+No-Touch-Register · OT-Containment-Governance
+Companion zum Fachbuch „ISMS für die Industrie. Von ISO 27001 über NIS2 bis OT-Security"
+
+© Sabine Frömling. Alle Rechte vorbehalten, soweit nicht durch die folgende Lizenz eingeräumt.
+
+Dieses Werk ist lizenziert unter der
+Creative Commons Namensnennung – Nicht kommerziell – Keine Bearbeitungen 4.0 International Lizenz
+(CC BY-NC-ND 4.0).
+
+Sie dürfen:
+  Teilen — das Material in beliebigem Format vervielfältigen und weiterverbreiten.
+
+Unter den folgenden Bedingungen:
+  Namensnennung (BY)        — Sie müssen angemessene Urheber- und Rechteangaben
+                               machen, einen Link zur Lizenz beifügen und angeben,
+                               ob Änderungen vorgenommen wurden. Nennen Sie als
+                               Urheberin: Sabine Frömling.
+  Nicht kommerziell (NC)    — Sie dürfen das Material nicht für kommerzielle Zwecke
+                               nutzen.
+  Keine Bearbeitungen (ND)  — Wenn Sie das Material remixen, verändern oder darauf
+                               aufbauen, dürfen Sie die bearbeitete Fassung des
+                               Materials nicht verbreiten.
+
+Keine weiteren Einschränkungen — Sie dürfen keine zusätzlichen Klauseln oder
+technischen Verfahren einsetzen, die anderen rechtlich irgendetwas untersagen,
+was die Lizenz erlaubt.
+
+Der vollständige Lizenztext ist abrufbar unter:
+https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.de
+
+Zusammenfassung der Lizenz (allgemeinverständlich):
+https://creativecommons.org/licenses/by-nc-nd/4.0/deed.de
+
+HAFTUNGSAUSSCHLUSS
+Dieses Werkzeug wird ohne Gewähr bereitgestellt. Es dient der Strukturierung der
+Containment-Governance (No-Touch-Register) und ersetzt weder den Workshop mit
+Anlagenleitung, SOC und ISMS-Verantwortlichen noch die Verankerung des Sicherheits-
+Stopps im real ausgeführten IR-Playbook, noch eine vollständige Risiko- oder
+Business-Impact-Analyse. Die fachliche Korrektheit der Festlegungen — welches Asset
+mit welcher Frist und welchem benannten Eskalations-Empfänger geführt wird — liegt
+in der Verantwortung der anwendenden Organisation.
