@@ -106,110 +106,174 @@ footer{margin-top:34px;border-top:1px solid var(--line);padding-top:15px;font-si
 }
 body.a3 .poster{font-size:13px;}
 @media print{body.a3 *{}}
+.langsw{position:absolute;top:0;right:0;display:flex;border:1px solid var(--ink);}
+.langsw button{font-family:inherit;font-size:11px;font-weight:600;padding:5px 11px;border:0;background:transparent;color:var(--ink);cursor:pointer;letter-spacing:1px;}
+.langsw button.on{background:var(--ink);color:#fff;}
+@media print{.langsw{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="noprint">
-  <div class="kicker">OT-Security · Companion zum Buch</div>
-  <h1>No-Touch-Register</h1>
-  <p class="sub">Die operative Schwester der Crown-Jewels-Analyse. Sie beantwortet die Frage, die in fast jedem IR-Playbook offenbleibt: <b>Wer darf im akuten OT-Vorfall was abschalten?</b> Für jedes Crown Jewel wird festgelegt, welche Maßnahmen <span class="sig">veto-pflichtig</span> sind, warum der SOC sie nicht unilateral ausführen darf, welche Eskalationskette mit welchen Fristen gilt und welche sichere Rückfall-Aktion bei Fristablauf greift. <span class="sig">§</span> Alles bleibt im Browser.</p>
-  <p class="ref">Methodik nach „ISMS für die Industrie“, Kap. 9.3 (No-Touch-Register, Tab. 9.1), 9.4 (RACI für Containment) und 9.5 (Eskalationskette mit Zeitfenstern).</p>
+<header class="noprint" style="position:relative">
+  <div class="langsw noprint"><button id="lde" class="on" onclick="setLang('de')">DE</button><button id="len" onclick="setLang('en')">EN</button></div>
+  <div class="kicker" data-t="kicker"></div>
+  <h1 data-t="h1"></h1>
+  <p class="sub" data-t="sub"></p>
+  <p class="ref" data-t="ref"></p>
 </header>
 
 <details class="noprint">
-<summary>Das Containment-Paradox & die Logik des Registers (lesen)</summary>
-<p><b>Containment-Paradox (Kap. 9.1):</b> In der IT begrenzt der Reflex „im Zweifel isolieren“ den Schaden. In der OT kann genau dieser Reflex den Schaden erst auslösen — eine isolierte SPS in einem kontinuierlichen Prozess kann eine Charge zerstören oder einen Reaktor in einen unsicheren Zustand bringen. Die Containment-Maßnahme wird dann selbst zum Schadensereignis.</p>
-<p><b>Zwei Maßnahmenklassen (Kap. 9.3):</b></p>
-<ul>
-<li><b style="color:var(--frei)">Vorab freigegeben</b> — reversible Aktionen ohne direkten Prozesseingriff (Monitoring vertiefen, Logs sichern, forensische Images, Sperrung kompromittierter Benutzerkonten, Isolation benachbarter IT-Systeme außerhalb des OT-Datenpfads). Der SOC führt sie eigenständig aus. <i>Diese Klasse bleibt schnell.</i></li>
-<li><b style="color:var(--veto)">Veto-pflichtig</b> — Aktionen am Asset selbst, die den physischen Prozess beeinflussen können (Netzwerk-Isolation, Service-Restart, Account-Lockout von Service-Konten, Konfigurations-/Firmware-Aktion). Erfordern die ausdrückliche Bestätigung einer benannten Rolle aus dem Anlagenbetrieb.</li>
-</ul>
-<p><b>Kein bürokratisches Genehmigungsverfahren, sondern ein Stopp im Playbook (Kap. 9.3/9.5):</b> Der SOC-Analyst stößt auf einen Checkpoint, die zuständige Rolle wird nach definierter Kette gerufen, die Uhr läuft gegen <i>harte Zeitfenster</i> — nicht gegen das Urteil eines einzelnen Analysten. Läuft das Fenster ab, greift die vorab abgestimmte Sicherer-Zustand-Aktion, nicht die unilaterale Isolation.</p>
-<p><b>RACI je veto-pflichtiger Maßnahme (Kap. 9.4):</b> Accountable = Asset Owner / Werksleiter · Responsible = SOC · Consulted = CISO / ISB · Informed = Geschäftsleitung.</p>
+<summary data-t="dsum"></summary>
+<div data-t="dbody"></div>
 </details>
 
-<h2 class="noprint">Schritt 1 — Crown Jewels übernehmen</h2>
-<p class="note">Das No-Touch-Register ist keine separate Datenbasis. Es ist dieselbe Crown-Jewels-Liste, ergänzt um die Veto-Steuerung (Kap. 9.3). Übernehmen Sie die Crown Jewels direkt aus dem Crown-Jewels-Tool (JSON-Import — es werden nur Assets mit der Klassifikation „Crown Jewel“ übernommen) oder legen Sie 3–5 kritische Assets manuell an. Mehr als fünf sollten es im Regelfall nicht sein.</p>
+<h2 class="noprint" data-t="h2a"></h2>
+<p class="note" data-t="notea"></p>
 <div class="toolbar noprint" style="margin-top:0">
-  <button class="btn ghost" onclick="document.getElementById('cjfile').click()">Crown-Jewels-JSON importieren</button>
+  <button class="btn ghost" onclick="document.getElementById('cjfile').click()" data-t="bimp"></button>
   <input type="file" id="cjfile" accept=".json" style="display:none" onchange="importCrownJewels(event)">
-  <button class="addbtn" style="margin-top:0" onclick="addAsset()">+ Asset manuell</button>
+  <button class="addbtn" style="margin-top:0" onclick="addAsset()" data-t="badd"></button>
   <span id="impMsg" class="legend" style="margin:0"></span>
 </div>
 
 <div id="overWarn" class="noprint"></div>
 
-<h2 class="noprint">Schritt 2 — No-Touch-Definition je Asset</h2>
-<p class="note">Vorlage Tab. 9.1: veto-pflichtige Maßnahme, Begründung des Vetos, sicherer Rückfall, Eskalationskette mit Fristen. Die voreingestellte Kette (Schichtleiter 5 Min → Leittechniker 10 Min → Werksleiter 15 Min → Rückfall) stammt aus Kap. 9.5 und ist je Asset anzupassen. Tragen Sie die <b>namentlich benannten</b> Rollen ein — anonyme Rollen sind im Vorfall wertlos.</p>
+<h2 class="noprint" data-t="h2b"></h2>
+<p class="note" data-t="noteb"></p>
 <div id="cards"></div>
 
-<h2 class="noprint">Schritt 3 — Operativer Aushang</h2>
-<p class="note">Das Endprodukt: eine einseitige Übersicht, die im SOC, in der Leitwarte und am Arbeitsplatz des OT Security Lead sichtbar ausliegt (Kap. 9.3) — physisch ausgehängt oder als Sperrbildschirm. Druckansicht für Wand-Aushang in <b>A3 quer</b> empfohlen; im Audit gilt die im SOC sichtbare Variante als operativer Beleg.</p>
+<h2 class="noprint" data-t="h2c"></h2>
+<p class="note" data-t="notec"></p>
 
-<div class="print-only" style="text-align:center;font-size:10px;color:#000;margin-bottom:4px;">No-Touch-Register · operativer Aushang · generiert mit dem Companion zum Buch „ISMS für die Industrie“</div>
+<div class="print-only" style="text-align:center;font-size:10px;color:#000;margin-bottom:4px;" data-t="printline"></div>
 <div class="poster" id="poster"></div>
 
-<div class="warn noprint" style="margin-top:22px;border-color:var(--red);background:#fdeceb;">
-  <b>⚠ Der Wert liegt nicht in der Grafik, sondern in der Disziplin davor (Kap. 9.3/9.4).</b>
-  Dieses Werkzeug ist das sichtbare Endprodukt eines methodisch sauberen Prozesses — nicht der Prozess selbst. Wer welches Asset mit welcher Frist und welchem benannten Eskalations-Empfänger auf die Liste setzt, ist Ergebnis der Crown-Jewels-Analyse (Kap. 3.5), eines Workshops mit der Anlagenleitung (Kap. 9.6, Schritt 1) und der RACI-Entscheidungen (Kap. 9.4). Ein ausgefüllter Aushang ohne diesen vorausgehenden Abgleich erzeugt Scheinsicherheit. Der zweite, ebenso wichtige Schritt: den Stopp im real ausgeführten IR-Playbook verankern (Kap. 9.6, Schritt 2) und die OT-Spalte der RACI-Matrix korrigieren (Schritt 3).
-</div>
+<div class="warn noprint" style="margin-top:22px;border-color:var(--red);background:#fdeceb;" data-t="bigwarn"></div>
 
 <div class="toolbar noprint">
-  <button class="btn ghost" onclick="saveJSON()">Speichern (JSON)</button>
-  <button class="btn ghost" onclick="document.getElementById('file').click()">Laden (JSON)</button>
+  <button class="btn ghost" onclick="saveJSON()" data-t="bsave"></button>
+  <button class="btn ghost" onclick="document.getElementById('file').click()" data-t="bload"></button>
   <input type="file" id="file" accept=".json" style="display:none" onchange="loadJSON(event)">
-  <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
-  <button class="btn ghost" onclick="toggleA3()">A3-quer: <span id="a3state">aus</span></button>
-  <button class="btn" onclick="window.print()">Aushang drucken / PDF</button>
+  <button class="btn ghost" onclick="exportCSV()" data-t="bcsv"></button>
+  <button class="btn ghost" onclick="toggleA3()"><span data-t="ba3"></span> <span id="a3state"></span></button>
+  <button class="btn" onclick="window.print()" data-t="bprint"></button>
 </div>
 
-<footer class="noprint">
-  Methodik nach „ISMS für die Industrie“, Kap. 9. Veto-pflichtig ist ausschließlich die schmale Klasse von Maßnahmen, die einen ungeplanten Stillstand eines kontinuierlichen Prozesses auslösen können — Detektion, Analyse, Beweissicherung und Monitoring-Verstärkung bleiben jederzeit beim SOC (Kap. 9.5).
-  Schnittstellen: Kap. 3.5 (Crown-Jewels-Analyse, Datenbasis), Kap. 8 (Vorfallmanagement, gespiegelte Eskalationsketten), Kap. 24.3 (Island-Mode als Voraussetzung für definierte Sicherer-Zustand-Aktionen).<br>
-  Begleitwerkzeug zur Workshop-Strukturierung — ersetzt nicht den Workshop mit Anlagenleitung, SOC und ISMS-Verantwortlichen.<br>
-  <span class="sig">§</span> Sabine Frömling — Independent OT-Security &amp; Compliance Advisory.
-</footer>
+<footer class="noprint" data-t="foot"></footer>
 </div>
 
 <script>
-/* ---- Stammdaten / Vorauswahlen aus dem Buch (Kap. 9.3 / Tab. 9.1) ---- */
+/* ---- Kanonische Stammdaten (DE) — Schlüssel für Speicherung & CJ-Import ---- */
 const TYP=["SCADA","DCS","SPS","Schutzrelais","SIS","HMI","Historian","Engineering-WS","Netzwerk","Datenbank","Sonstiges"];
-const VETO_MASSN=[
-  "Netzwerk-Isolation des Assets","Service-Restart","Account-Lockout (Service-Konten)",
-  "Konfigurationsänderung","Firmware-Aktion","SPS-Programm-Änderung",
-  "Trennung vom Stationsbus","Schreibzugriff sperren"
-];
-const VETO_GRUND=[
-  "Operator verliert Sichtbarkeit (blinde Anlagenführung)",
-  "Gefahr für Safety / letzte Schutzschicht",
-  "Kontinuierlicher Prozess lässt sich nicht einfach stoppen",
-  "Kaskadierung im Verbund möglich",
-  "Verlust regulatorischer Datenstrom / Meldepflicht"
-];
-const FALLBACK=[
-  "Umschalten auf redundanten Master","Letzten gültigen Zustand halten",
-  "Wechsel auf Reserve-Schutzschema","Schreibsperre + Logsicherung",
-  "Lokale Pufferung an Quell-SPS (kein Eingriff stromaufwärts)",
-  "Manueller Operator-Eingriff",
-  "Keine Isolation — Schichtleiter bestätigt sicheren Zustand"
-];
-const VORAB_FREI=[
-  "Monitoring-Tiefe erhöhen","Logdaten sichern","Forensische Bildaufnahme",
-  "Isolation benachbarter IT-Systeme (nicht im OT-Datenpfad)","Sperrung kompromittierter Benutzerkonten"
-];
+const VETO_MASSN=["Netzwerk-Isolation des Assets","Service-Restart","Account-Lockout (Service-Konten)","Konfigurationsänderung","Firmware-Aktion","SPS-Programm-Änderung","Trennung vom Stationsbus","Schreibzugriff sperren"];
+const VETO_GRUND=["Operator verliert Sichtbarkeit (blinde Anlagenführung)","Gefahr für Safety / letzte Schutzschicht","Kontinuierlicher Prozess lässt sich nicht einfach stoppen","Kaskadierung im Verbund möglich","Verlust regulatorischer Datenstrom / Meldepflicht"];
+const FALLBACK=["Umschalten auf redundanten Master","Letzten gültigen Zustand halten","Wechsel auf Reserve-Schutzschema","Schreibsperre + Logsicherung","Lokale Pufferung an Quell-SPS (kein Eingriff stromaufwärts)","Manueller Operator-Eingriff","Keine Isolation — Schichtleiter bestätigt sicheren Zustand"];
+const VORAB_FREI=["Monitoring-Tiefe erhöhen","Logdaten sichern","Forensische Bildaufnahme","Isolation benachbarter IT-Systeme (nicht im OT-Datenpfad)","Sperrung kompromittierter Benutzerkonten"];
+
+/* ---- Anzeige-Übersetzungen der kanonischen Werte ---- */
+const EN_ITEM={
+"SPS":"PLC","Schutzrelais":"Protective relay","Netzwerk":"Network","Datenbank":"Database","Sonstiges":"Other",
+"Netzwerk-Isolation des Assets":"Network isolation of the asset","Service-Restart":"Service restart","Account-Lockout (Service-Konten)":"Account lockout (service accounts)","Konfigurationsänderung":"Configuration change","Firmware-Aktion":"Firmware action","SPS-Programm-Änderung":"PLC program change","Trennung vom Stationsbus":"Disconnection from station bus","Schreibzugriff sperren":"Block write access",
+"Operator verliert Sichtbarkeit (blinde Anlagenführung)":"Operator loses visibility (flying the plant blind)","Gefahr für Safety / letzte Schutzschicht":"Risk to safety / last layer of protection","Kontinuierlicher Prozess lässt sich nicht einfach stoppen":"Continuous process cannot simply be stopped","Kaskadierung im Verbund möglich":"Cascading across the interconnected system possible","Verlust regulatorischer Datenstrom / Meldepflicht":"Loss of regulatory data stream / reporting obligation",
+"Umschalten auf redundanten Master":"Switch over to redundant master","Letzten gültigen Zustand halten":"Hold last valid state","Wechsel auf Reserve-Schutzschema":"Switch to backup protection scheme","Schreibsperre + Logsicherung":"Write lock + log preservation","Lokale Pufferung an Quell-SPS (kein Eingriff stromaufwärts)":"Local buffering at source PLC (no upstream intervention)","Manueller Operator-Eingriff":"Manual operator intervention","Keine Isolation — Schichtleiter bestätigt sicheren Zustand":"No isolation — shift supervisor confirms safe state",
+"Monitoring-Tiefe erhöhen":"Increase monitoring depth","Logdaten sichern":"Preserve log data","Forensische Bildaufnahme":"Forensic imaging","Isolation benachbarter IT-Systeme (nicht im OT-Datenpfad)":"Isolation of adjacent IT systems (outside the OT data path)","Sperrung kompromittierter Benutzerkonten":"Lockout of compromised user accounts",
+"Schichtleiter":"Shift supervisor","Leittechniker":"Control engineer","Werksleiter":"Plant manager","Geschäftsleitung":"Executive management"
+};
+const item=v=>lang==="en"?(EN_ITEM[v]||v):v;
+
+const TXT={
+de:{
+ title:"No-Touch-Register · Companion zum Buch",
+ kicker:"OT-Security · Companion zum Buch",
+ h1:"No-Touch-Register",
+ sub:"Die operative Schwester der Crown-Jewels-Analyse. Sie beantwortet die Frage, die in fast jedem IR-Playbook offenbleibt: <b>Wer darf im akuten OT-Vorfall was abschalten?</b> Für jedes Crown Jewel wird festgelegt, welche Maßnahmen <span class='sig'>veto-pflichtig</span> sind, warum der SOC sie nicht unilateral ausführen darf, welche Eskalationskette mit welchen Fristen gilt und welche sichere Rückfall-Aktion bei Fristablauf greift. <span class='sig'>§</span> Alles bleibt im Browser.",
+ ref:"Methodik nach „ISMS für die Industrie\u201c, Kap. 9.3 (No-Touch-Register, Tab. 9.1), 9.4 (RACI für Containment) und 9.5 (Eskalationskette mit Zeitfenstern).",
+ dsum:"Das Containment-Paradox & die Logik des Registers (lesen)",
+ dbody:"<p><b>Containment-Paradox (Kap. 9.1):</b> In der IT begrenzt der Reflex „im Zweifel isolieren\u201c den Schaden. In der OT kann genau dieser Reflex den Schaden erst auslösen — eine isolierte SPS in einem kontinuierlichen Prozess kann eine Charge zerstören oder einen Reaktor in einen unsicheren Zustand bringen. Die Containment-Maßnahme wird dann selbst zum Schadensereignis.</p><p><b>Zwei Maßnahmenklassen (Kap. 9.3):</b></p><ul><li><b style='color:var(--frei)'>Vorab freigegeben</b> — reversible Aktionen ohne direkten Prozesseingriff (Monitoring vertiefen, Logs sichern, forensische Images, Sperrung kompromittierter Benutzerkonten, Isolation benachbarter IT-Systeme außerhalb des OT-Datenpfads). Der SOC führt sie eigenständig aus. <i>Diese Klasse bleibt schnell.</i></li><li><b style='color:var(--veto)'>Veto-pflichtig</b> — Aktionen am Asset selbst, die den physischen Prozess beeinflussen können (Netzwerk-Isolation, Service-Restart, Account-Lockout von Service-Konten, Konfigurations-/Firmware-Aktion). Erfordern die ausdrückliche Bestätigung einer benannten Rolle aus dem Anlagenbetrieb.</li></ul><p><b>Kein bürokratisches Genehmigungsverfahren, sondern ein Stopp im Playbook (Kap. 9.3/9.5):</b> Der SOC-Analyst stößt auf einen Checkpoint, die zuständige Rolle wird nach definierter Kette gerufen, die Uhr läuft gegen <i>harte Zeitfenster</i> — nicht gegen das Urteil eines einzelnen Analysten. Läuft das Fenster ab, greift die vorab abgestimmte Sicherer-Zustand-Aktion, nicht die unilaterale Isolation.</p><p><b>RACI je veto-pflichtiger Maßnahme (Kap. 9.4):</b> Accountable = Asset Owner / Werksleiter · Responsible = SOC · Consulted = CISO / ISB · Informed = Geschäftsleitung.</p>",
+ h2a:"Schritt 1 — Crown Jewels übernehmen",
+ notea:"Das No-Touch-Register ist keine separate Datenbasis. Es ist dieselbe Crown-Jewels-Liste, ergänzt um die Veto-Steuerung (Kap. 9.3). Übernehmen Sie die Crown Jewels direkt aus dem Crown-Jewels-Tool (JSON-Import — es werden nur Assets mit der Klassifikation „Crown Jewel\u201c übernommen) oder legen Sie 3–5 kritische Assets manuell an. Mehr als fünf sollten es im Regelfall nicht sein.",
+ bimp:"Crown-Jewels-JSON importieren",badd:"+ Asset manuell",
+ h2b:"Schritt 2 — No-Touch-Definition je Asset",
+ noteb:"Vorlage Tab. 9.1: veto-pflichtige Maßnahme, Begründung des Vetos, sicherer Rückfall, Eskalationskette mit Fristen. Die voreingestellte Kette (Schichtleiter 5 Min → Leittechniker 10 Min → Werksleiter 15 Min → Rückfall) stammt aus Kap. 9.5 und ist je Asset anzupassen. Tragen Sie die <b>namentlich benannten</b> Rollen ein — anonyme Rollen sind im Vorfall wertlos.",
+ h2c:"Schritt 3 — Operativer Aushang",
+ notec:"Das Endprodukt: eine einseitige Übersicht, die im SOC, in der Leitwarte und am Arbeitsplatz des OT Security Lead sichtbar ausliegt (Kap. 9.3) — physisch ausgehängt oder als Sperrbildschirm. Druckansicht für Wand-Aushang in <b>A3 quer</b> empfohlen; im Audit gilt die im SOC sichtbare Variante als operativer Beleg.",
+ printline:"No-Touch-Register · operativer Aushang · generiert mit dem Companion zum Buch „ISMS für die Industrie\u201c",
+ bigwarn:"<b>⚠ Der Wert liegt nicht in der Grafik, sondern in der Disziplin davor (Kap. 9.3/9.4).</b> Dieses Werkzeug ist das sichtbare Endprodukt eines methodisch sauberen Prozesses — nicht der Prozess selbst. Wer welches Asset mit welcher Frist und welchem benannten Eskalations-Empfänger auf die Liste setzt, ist Ergebnis der Crown-Jewels-Analyse (Kap. 3.5), eines Workshops mit der Anlagenleitung (Kap. 9.6, Schritt 1) und der RACI-Entscheidungen (Kap. 9.4). Ein ausgefüllter Aushang ohne diesen vorausgehenden Abgleich erzeugt Scheinsicherheit. Der zweite, ebenso wichtige Schritt: den Stopp im real ausgeführten IR-Playbook verankern (Kap. 9.6, Schritt 2) und die OT-Spalte der RACI-Matrix korrigieren (Schritt 3).",
+ bsave:"Speichern (JSON)",bload:"Laden (JSON)",bcsv:"Export CSV",ba3:"A3-quer:",a3on:"an",a3off:"aus",bprint:"Aushang drucken / PDF",
+ foot:"Methodik nach „ISMS für die Industrie\u201c, Kap. 9. Veto-pflichtig ist ausschließlich die schmale Klasse von Maßnahmen, die einen ungeplanten Stillstand eines kontinuierlichen Prozesses auslösen können — Detektion, Analyse, Beweissicherung und Monitoring-Verstärkung bleiben jederzeit beim SOC (Kap. 9.5). Schnittstellen: Kap. 3.5 (Crown-Jewels-Analyse, Datenbasis), Kap. 8 (Vorfallmanagement, gespiegelte Eskalationsketten), Kap. 24.3 (Island-Mode als Voraussetzung für definierte Sicherer-Zustand-Aktionen).<br>Begleitwerkzeug zur Workshop-Strukturierung — ersetzt nicht den Workshop mit Anlagenleitung, SOC und ISMS-Verantwortlichen.<br><span class='sig'>§</span> Sabine Frömling — Independent OT-Security &amp; Compliance Advisory.",
+ empty:"Noch keine Assets. Crown Jewels importieren oder manuell anlegen — Ziel sind 3–5 kritische Assets.",
+ impNone:"Keine Crown Jewels (4 in ≥2 Kriterien) in der Datei gefunden.",
+ impOk:n=>n+" Crown Jewel(s) übernommen. RTO, Typ und Asset Owner vorbefüllt — Veto-Felder ergänzen.",
+ notRead:"Datei nicht lesbar.",
+ overwarn:n=>`⚠ ${n} Assets im Register. Das No-Touch-Register umfasst im typischen Anlagenbetrieb drei bis fünf Crown Jewels (Kap. 9.5). Je größer die veto-pflichtige Klasse, desto eher trägt der Einwand „Veto-Recht als Geschwindigkeitsbremse\u201c. Prüfen Sie, ob die Liste zu großzügig ist.`,
+ lRto:"RTO-Ziel",phRto:"z. B. < 5 Min",lVeto:"<b>Veto-pflichtige Maßnahme</b>",lWhy:"Warum kein unilateraler SOC-Zugriff?",lFall:"Sicherer Rückfall / Notfall-Aktion",phMore:"weitere…",
+ lKette:"Eskalationskette &amp; Zeitfenster (Rolle · Frist in Min · namentlich)",phRole:"Rolle",phMin:"Min",phName:"Name",uMin:"Min",
+ wNan:"Frist muss numerisch sein",wOrd:"Fristen müssen monoton steigen (z. B. 5 → 10 → 15)",wOrd1:"Frist muss größer sein als die vorige Stufe",
+ thenFall:"danach: sicherer Rückfall (s. o.)",addStep:"+ Stufe",delStep:"Stufe entfernen",delAsset:"Entfernen",
+ lRaci:"RACI für diese Containment-Entscheidung (Kap. 9.4)",phAcc:"Asset Owner / Werksleiter",phResp:"SOC",phCons:"CISO / ISB",phInf:"Geschäftsleitung",
+ pTitle:"No-Touch-Register",pSub:"Nicht ohne Freigabe des Anlagenbetriebs anrühren",
+ pIntro:"<b>Stopp im Playbook:</b> Die unten gelisteten Maßnahmen darf der SOC an diesen Assets <b>nicht eigenständig</b> ausführen. Benannte Rolle nach Eskalationskette rufen. Läuft die Frist ohne Antwort ab, greift der hinterlegte sichere Rückfall — keine unilaterale Isolation.",
+ pTh:["Crown Jewel (RACI)","Veto-pflichtige Maßnahme","Warum kein Alleingang","Eskalationskette &amp; Fristen","Sicherer Rückfall"],
+ pEmpty:"Noch keine Crown Jewels erfasst.",pRtoLbl:"RTO-Ziel",pThenFall:"danach Rückfall",
+ pFreiH:"Vorab freigegeben — SOC handelt eigenständig, ohne Veto",
+ pFoot1:"Methodik: „ISMS für die Industrie\u201c, Kap. 9.3–9.5 · RACI je Maßnahme nach Kap. 9.4<br><b style='color:var(--veto)'>Sicherer Rückfall setzt autarken Inselbetrieb voraus → Island-Mode dokumentiert? (Kap. 24.3)</b>",
+ pFoot2:d=>`Stand: ${d} · sichtbar aushängen in SOC / Leitwarte / OT Security Lead`,
+ csvHead:["ID","Asset","Typ","RTO-Ziel","Veto-pflichtige Maßnahme","Warum kein Alleingang","Eskalationskette","Sicherer Rückfall","Accountable","Responsible","Consulted","Informed"],
+ csvFall:"Rückfall",csvFrei:"Vorab freigegebene Maßnahme (SOC eigenständig, ohne Veto)",csvName:"no-touch-register.csv",
+ newAsset:"Neues Asset",assetN:n=>"Asset "+n,locale:"de-DE"
+},
+en:{
+ title:"No-Touch Register · Book companion",
+ kicker:"OT Security · Book companion",
+ h1:"No-Touch Register",
+ sub:"The operational sister of the crown jewels analysis. It answers the question almost every IR playbook leaves open: <b>who may shut down what during an acute OT incident?</b> For each crown jewel it defines which actions are <span class='sig'>veto-bound</span>, why the SOC must not execute them unilaterally, which escalation chain with which deadlines applies, and which safe fallback action takes effect when the deadline expires. <span class='sig'>§</span> Everything stays in your browser.",
+ ref:"Methodology per \u201cISMS für die Industrie\u201d, ch. 9.3 (no-touch register, tab. 9.1), 9.4 (RACI for containment) and 9.5 (escalation chain with time windows).",
+ dsum:"The containment paradox & the logic of the register (read me)",
+ dbody:"<p><b>Containment paradox (ch. 9.1):</b> in IT, the reflex \u201cwhen in doubt, isolate\u201d limits the damage. In OT, exactly this reflex can be what causes the damage — an isolated PLC in a continuous process can destroy a batch or push a reactor into an unsafe state. The containment action then becomes the damage event itself.</p><p><b>Two classes of actions (ch. 9.3):</b></p><ul><li><b style='color:var(--frei)'>Pre-approved</b> — reversible actions without direct process intervention (deepen monitoring, preserve logs, forensic images, lockout of compromised user accounts, isolation of adjacent IT systems outside the OT data path). The SOC executes these on its own. <i>This class stays fast.</i></li><li><b style='color:var(--veto)'>Veto-bound</b> — actions on the asset itself that can affect the physical process (network isolation, service restart, account lockout of service accounts, configuration/firmware action). They require explicit confirmation by a named role from plant operations.</li></ul><p><b>Not a bureaucratic approval procedure, but a stop in the playbook (ch. 9.3/9.5):</b> the SOC analyst hits a checkpoint, the responsible role is called per a defined chain, and the clock runs against <i>hard time windows</i> — not against the judgement of a single analyst. If the window expires, the pre-agreed safe-state action takes effect — not unilateral isolation.</p><p><b>RACI per veto-bound action (ch. 9.4):</b> Accountable = asset owner / plant manager · Responsible = SOC · Consulted = CISO / ISO · Informed = executive management.</p>",
+ h2a:"Step 1 — Import crown jewels",
+ notea:"The no-touch register is not a separate data set. It is the same crown-jewels list, extended by the veto controls (ch. 9.3). Import the crown jewels directly from the crown-jewels tool (JSON import — only assets classified as \u201ccrown jewel\u201d are taken over) or create 3–5 critical assets manually. As a rule, there should not be more than five.",
+ bimp:"Import crown jewels JSON",badd:"+ Add asset manually",
+ h2b:"Step 2 — No-touch definition per asset",
+ noteb:"Template per tab. 9.1: veto-bound action, rationale for the veto, safe fallback, escalation chain with deadlines. The preset chain (shift supervisor 5 min → control engineer 10 min → plant manager 15 min → fallback) comes from ch. 9.5 and must be adapted per asset. Enter roles <b>with named individuals</b> — anonymous roles are worthless during an incident.",
+ h2c:"Step 3 — Operational poster",
+ notec:"The end product: a one-page overview displayed visibly in the SOC, in the control room and at the OT security lead's desk (ch. 9.3) — physically posted or as a lock screen. Print view recommended in <b>A3 landscape</b> for wall posting; in an audit, the version visible in the SOC counts as operational evidence.",
+ printline:"No-touch register · operational poster · generated with the companion to the book \u201cISMS für die Industrie\u201d",
+ bigwarn:"<b>⚠ The value is not in the graphic but in the discipline before it (ch. 9.3/9.4).</b> This tool is the visible end product of a methodically sound process — not the process itself. Which asset goes on the list, with which deadline and which named escalation recipient, is the outcome of the crown jewels analysis (ch. 3.5), a workshop with plant management (ch. 9.6, step 1) and the RACI decisions (ch. 9.4). A filled-in poster without this preceding alignment creates a false sense of security. The second, equally important step: anchor the stop in the IR playbook actually executed (ch. 9.6, step 2) and correct the OT column of the RACI matrix (step 3).",
+ bsave:"Save (JSON)",bload:"Load (JSON)",bcsv:"Export CSV",ba3:"A3 landscape:",a3on:"on",a3off:"off",bprint:"Print poster / PDF",
+ foot:"Methodology per \u201cISMS für die Industrie\u201d, ch. 9. Veto-bound is solely the narrow class of actions that can trigger an unplanned shutdown of a continuous process — detection, analysis, evidence preservation and monitoring reinforcement remain with the SOC at all times (ch. 9.5). Interfaces: ch. 3.5 (crown jewels analysis, data basis), ch. 8 (incident management, mirrored escalation chains), ch. 24.3 (island mode as a precondition for defined safe-state actions).<br>Companion for structuring the workshop — it does not replace the workshop with plant management, SOC and ISMS owners.<br><span class='sig'>§</span> Sabine Frömling — Independent OT Security &amp; Compliance Advisory.",
+ empty:"No assets yet. Import crown jewels or create them manually — the target is 3–5 critical assets.",
+ impNone:"No crown jewels (4 in ≥2 criteria) found in the file.",
+ impOk:n=>n+" crown jewel(s) imported. RTO, type and asset owner pre-filled — complete the veto fields.",
+ notRead:"File not readable.",
+ overwarn:n=>`⚠ ${n} assets in the register. In typical plant operations the no-touch register covers three to five crown jewels (ch. 9.5). The larger the veto-bound class, the stronger the objection \u201cveto right as a speed brake\u201d. Check whether the list is too generous.`,
+ lRto:"RTO target",phRto:"e.g. < 5 min",lVeto:"<b>Veto-bound action</b>",lWhy:"Why no unilateral SOC action?",lFall:"Safe fallback / emergency action",phMore:"more…",
+ lKette:"Escalation chain &amp; time windows (role · deadline in min · named)",phRole:"Role",phMin:"Min",phName:"Name",uMin:"min",
+ wNan:"Deadline must be numeric",wOrd:"Deadlines must increase monotonically (e.g. 5 → 10 → 15)",wOrd1:"Deadline must be larger than the previous step",
+ thenFall:"then: safe fallback (see above)",addStep:"+ Step",delStep:"Remove step",delAsset:"Remove",
+ lRaci:"RACI for this containment decision (ch. 9.4)",phAcc:"Asset owner / plant manager",phResp:"SOC",phCons:"CISO / ISO",phInf:"Executive management",
+ pTitle:"No-Touch Register",pSub:"Do not touch without release by plant operations",
+ pIntro:"<b>Stop in the playbook:</b> the SOC must <b>not</b> execute the actions listed below on these assets on its own. Call the named role per the escalation chain. If the deadline expires without an answer, the documented safe fallback takes effect — no unilateral isolation.",
+ pTh:["Crown jewel (RACI)","Veto-bound action","Why no solo action","Escalation chain &amp; deadlines","Safe fallback"],
+ pEmpty:"No crown jewels recorded yet.",pRtoLbl:"RTO target",pThenFall:"then fallback",
+ pFreiH:"Pre-approved — SOC acts on its own, no veto",
+ pFoot1:"Methodology: \u201cISMS für die Industrie\u201d, ch. 9.3–9.5 · RACI per action per ch. 9.4<br><b style='color:var(--veto)'>A safe fallback requires autonomous island operation → island mode documented? (ch. 24.3)</b>",
+ pFoot2:d=>`As of: ${d} · post visibly in SOC / control room / OT security lead`,
+ csvHead:["ID","Asset","Type","RTO target","Veto-bound action","Why no solo action","Escalation chain","Safe fallback","Accountable","Responsible","Consulted","Informed"],
+ csvFall:"fallback",csvFrei:"Pre-approved action (SOC on its own, no veto)",csvName:"no-touch-register.csv",
+ newAsset:"New asset",assetN:n=>"Asset "+n,locale:"en-GB"
+}};
+let lang="de";
+const L=()=>TXT[lang];
 
 let assets=[];
 function uid(){return crypto.randomUUID();}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 
 function defAsset(n){return {
-  id:uid(), name:n||"Neues Asset", typ:"SCADA", rto:"< 5 Min",
+  id:uid(), name:n||L().newAsset, typ:"SCADA", rto:"< 5 Min",
   veto:[], vetoFree:"", gruende:[], gruendeFree:"",
   fallback:[], fallbackFree:"",
-  // Eskalationskette: Liste {role, min, who}
   kette:[{role:"Schichtleiter",min:"5",who:""},{role:"Leittechniker",min:"10",who:""},{role:"Werksleiter",min:"15",who:""}],
-  // RACI (Kap. 9.4)
   acc:"", resp:"SOC", cons:"", inf:"Geschäftsleitung"
 };}
 
@@ -225,7 +289,7 @@ function importCrownJewels(e){
     try{
       const d=JSON.parse(r.result);
       const src=(d.assets||[]).filter(isCrownJewel);
-      if(!src.length){document.getElementById('impMsg').textContent='Keine Crown Jewels (4 in ≥2 Kriterien) in der Datei gefunden.';return;}
+      if(!src.length){document.getElementById('impMsg').textContent=L().impNone;return;}
       src.forEach(s=>{
         const a=defAsset(s.name);
         a.typ = TYP.includes(s.typ)?s.typ:"Sonstiges";
@@ -233,9 +297,9 @@ function importCrownJewels(e){
         a.acc = s.owner || "";
         assets.push(a);
       });
-      document.getElementById('impMsg').textContent=src.length+' Crown Jewel(s) übernommen. RTO, Typ und Asset Owner vorbefüllt — Veto-Felder ergänzen.';
+      document.getElementById('impMsg').textContent=L().impOk(src.length);
       render();
-    }catch(err){alert('Datei nicht lesbar.');}
+    }catch(err){alert(L().notRead);}
   };
   r.readAsText(f);
   e.target.value='';
@@ -255,12 +319,24 @@ function ketteIssues(a){
   return out;
 }
 
+/* ---- statisches i18n ---- */
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.title=L().title;
+  document.querySelectorAll("[data-t]").forEach(el=>el.innerHTML=L()[el.dataset.t]);
+  document.getElementById("a3state").textContent=document.body.classList.contains('a3')?L().a3on:L().a3off;
+  document.getElementById("lde").classList.toggle("on",lang==="de");
+  document.getElementById("len").classList.toggle("on",lang==="en");
+}
+function setLang(l){lang=l;try{const u=new URL(location);u.searchParams.set('lang',l);history.replaceState(null,'',u);}catch(e){}applyLang();render();}
+
 /* ---- Editor-Rendering ---- */
 function render(){
+  const T=L();
   const wrap=document.getElementById('cards');
   wrap.innerHTML='';
   if(!assets.length){
-    wrap.innerHTML='<div class="card empty"><div class="fld full" style="border-top:1px solid var(--line);color:var(--muted);font-size:12px;">Noch keine Assets. Crown Jewels importieren oder manuell anlegen — Ziel sind 3–5 kritische Assets.</div></div>';
+    wrap.innerHTML=`<div class="card empty"><div class="fld full" style="border-top:1px solid var(--line);color:var(--muted);font-size:12px;">${T.empty}</div></div>`;
   }
   assets.forEach((a,i)=>{
     const cjid="CJ-"+String(i+1).padStart(3,'0');
@@ -268,58 +344,52 @@ function render(){
     let h=`<div class="cardhead">
       <span class="cjid">${cjid}</span>
       <input value="${esc(a.name)}" onchange="upd(${i},'name',this.value)">
-      <select onchange="upd(${i},'typ',this.value)">${TYP.map(t=>`<option ${a.typ===t?'selected':''}>${t}</option>`).join('')}</select>
-      <button class="del" title="Entfernen" onclick="del(${i})">✕</button>
+      <select onchange="upd(${i},'typ',this.value)">${TYP.map(t=>`<option value="${t}" ${a.typ===t?'selected':''}>${esc(item(t))}</option>`).join('')}</select>
+      <button class="del" title="${T.delAsset}" onclick="del(${i})">✕</button>
     </div><div class="cardbody">`;
 
-    // RTO-Ziel
-    h+=`<div class="fld"><span class="lbl">RTO-Ziel</span>
-      <div class="txt"><input value="${esc(a.rto)}" placeholder="z. B. < 5 Min" onchange="upd(${i},'rto',this.value)"></div></div>`;
+    h+=`<div class="fld"><span class="lbl">${T.lRto}</span>
+      <div class="txt"><input value="${esc(a.rto)}" placeholder="${T.phRto}" onchange="upd(${i},'rto',this.value)"></div></div>`;
 
-    // Veto-pflichtige Maßnahme
-    h+=`<div class="fld"><span class="lbl"><b>Veto-pflichtige Maßnahme</b></span>`;
-    VETO_MASSN.forEach(m=>{h+=`<label class="chk"><input type="checkbox" ${a.veto.includes(m)?'checked':''} onchange="toggleArr(${i},'veto','${esc(m)}',this.checked)">${esc(m)}</label>`;});
-    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.vetoFree)}" placeholder="weitere…" onchange="upd(${i},'vetoFree',this.value)"></div></div>`;
+    h+=`<div class="fld"><span class="lbl">${T.lVeto}</span>`;
+    VETO_MASSN.forEach(m=>{h+=`<label class="chk"><input type="checkbox" ${a.veto.includes(m)?'checked':''} onchange="toggleArr(${i},'veto','${esc(m)}',this.checked)">${esc(item(m))}</label>`;});
+    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.vetoFree)}" placeholder="${T.phMore}" onchange="upd(${i},'vetoFree',this.value)"></div></div>`;
 
-    // Warum kein unilateraler SOC-Zugriff
-    h+=`<div class="fld"><span class="lbl">Warum kein unilateraler SOC-Zugriff?</span>`;
-    VETO_GRUND.forEach(g=>{h+=`<label class="chk"><input type="checkbox" ${a.gruende.includes(g)?'checked':''} onchange="toggleArr(${i},'gruende','${esc(g)}',this.checked)">${esc(g)}</label>`;});
-    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.gruendeFree)}" placeholder="weitere…" onchange="upd(${i},'gruendeFree',this.value)"></div></div>`;
+    h+=`<div class="fld"><span class="lbl">${T.lWhy}</span>`;
+    VETO_GRUND.forEach(g=>{h+=`<label class="chk"><input type="checkbox" ${a.gruende.includes(g)?'checked':''} onchange="toggleArr(${i},'gruende','${esc(g)}',this.checked)">${esc(item(g))}</label>`;});
+    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.gruendeFree)}" placeholder="${T.phMore}" onchange="upd(${i},'gruendeFree',this.value)"></div></div>`;
 
-    // Sicherer Rückfall
-    h+=`<div class="fld"><span class="lbl">Sicherer Rückfall / Notfall-Aktion</span>`;
-    FALLBACK.forEach(fb=>{h+=`<label class="chk"><input type="checkbox" ${a.fallback.includes(fb)?'checked':''} onchange="toggleArr(${i},'fallback','${esc(fb)}',this.checked)">${esc(fb)}</label>`;});
-    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.fallbackFree)}" placeholder="weitere…" onchange="upd(${i},'fallbackFree',this.value)"></div></div>`;
+    h+=`<div class="fld"><span class="lbl">${T.lFall}</span>`;
+    FALLBACK.forEach(fb=>{h+=`<label class="chk"><input type="checkbox" ${a.fallback.includes(fb)?'checked':''} onchange="toggleArr(${i},'fallback','${esc(fb)}',this.checked)">${esc(item(fb))}</label>`;});
+    h+=`<div class="txt" style="margin-top:5px"><input value="${esc(a.fallbackFree)}" placeholder="${T.phMore}" onchange="upd(${i},'fallbackFree',this.value)"></div></div>`;
 
-    // Eskalationskette (mit Fristen-Validierung: numerisch + monoton steigend)
     const issues=ketteIssues(a);
-    h+=`<div class="fld full"><span class="lbl">Eskalationskette &amp; Zeitfenster (Rolle · Frist in Min · namentlich)</span>`;
+    h+=`<div class="fld full"><span class="lbl">${T.lKette}</span>`;
     a.kette.forEach((k,ki)=>{
       const bad=issues[ki]?' bad':'';
       h+=`<div class="esc">
         ${ki>0?'<span class="arrow">→</span>':''}
-        <input class="role" value="${esc(k.role)}" placeholder="Rolle" onchange="updKette(${i},${ki},'role',this.value)">
-        <input class="min${bad}" value="${esc(k.min)}" placeholder="Min" title="${issues[ki]==='nan'?'Frist muss numerisch sein':(issues[ki]==='order'?'Frist muss größer sein als die vorige Stufe':'')}" onchange="updKette(${i},${ki},'min',this.value)">
-        <span style="font-size:10px;color:var(--muted)">Min</span>
-        <input class="who" value="${esc(k.who)}" placeholder="Name" onchange="updKette(${i},${ki},'who',this.value)">
-        <button class="delrow" title="Stufe entfernen" onclick="delKette(${i},${ki})">✕</button>
+        <input class="role" value="${esc(k.role)}" placeholder="${T.phRole}" onchange="updKette(${i},${ki},'role',this.value)">
+        <input class="min${bad}" value="${esc(k.min)}" placeholder="${T.phMin}" title="${issues[ki]==='nan'?T.wNan:(issues[ki]==='order'?T.wOrd1:'')}" onchange="updKette(${i},${ki},'min',this.value)">
+        <span style="font-size:10px;color:var(--muted)">${T.uMin}</span>
+        <input class="who" value="${esc(k.who)}" placeholder="${T.phName}" onchange="updKette(${i},${ki},'who',this.value)">
+        <button class="delrow" title="${T.delStep}" onclick="delKette(${i},${ki})">✕</button>
       </div>`;
     });
     if(issues.some(x=>x)){
       const hasNan=issues.includes('nan'), hasOrd=issues.includes('order');
-      const msg=[hasNan?'Frist muss numerisch sein':null,hasOrd?'Fristen müssen monoton steigen (z. B. 5 → 10 → 15)':null].filter(Boolean).join(' · ');
+      const msg=[hasNan?T.wNan:null,hasOrd?T.wOrd:null].filter(Boolean).join(' · ');
       h+=`<div class="kettewarn">⚠ ${msg}</div>`;
     }
-    h+=`<div class="esc"><span class="arrow">→</span><span style="font-size:11px;color:var(--veto);font-weight:600">danach: sicherer Rückfall (s. o.)</span></div>`;
-    h+=`<button class="miniadd" onclick="addKette(${i})">+ Stufe</button></div>`;
+    h+=`<div class="esc"><span class="arrow">→</span><span style="font-size:11px;color:var(--veto);font-weight:600">${T.thenFall}</span></div>`;
+    h+=`<button class="miniadd" onclick="addKette(${i})">${T.addStep}</button></div>`;
 
-    // RACI
-    h+=`<div class="fld full"><span class="lbl">RACI für diese Containment-Entscheidung (Kap. 9.4)</span>
+    h+=`<div class="fld full"><span class="lbl">${T.lRaci}</span>
       <div class="raci">
-        <span class="r" title="Accountable">A · Accountable</span><input value="${esc(a.acc)}" placeholder="Asset Owner / Werksleiter" onchange="upd(${i},'acc',this.value)">
-        <span class="r" title="Responsible">R · Responsible</span><input value="${esc(a.resp)}" placeholder="SOC" onchange="upd(${i},'resp',this.value)">
-        <span class="r" title="Consulted">C · Consulted</span><input value="${esc(a.cons)}" placeholder="CISO / ISB" onchange="upd(${i},'cons',this.value)">
-        <span class="r" title="Informed">I · Informed</span><input value="${esc(a.inf)}" placeholder="Geschäftsleitung" onchange="upd(${i},'inf',this.value)">
+        <span class="r" title="Accountable">A · Accountable</span><input value="${esc(a.acc)}" placeholder="${T.phAcc}" onchange="upd(${i},'acc',this.value)">
+        <span class="r" title="Responsible">R · Responsible</span><input value="${esc(a.resp)}" placeholder="${T.phResp}" onchange="upd(${i},'resp',this.value)">
+        <span class="r" title="Consulted">C · Consulted</span><input value="${esc(a.cons)}" placeholder="${T.phCons}" onchange="upd(${i},'cons',this.value)">
+        <span class="r" title="Informed">I · Informed</span><input value="${esc(a.inf)}" placeholder="${T.phInf}" onchange="upd(${i},'inf',this.value)">
       </div></div>`;
 
     h+=`</div>`;
@@ -332,36 +402,37 @@ function render(){
 
 function renderWarn(){
   const w=document.getElementById('overWarn');
-  if(assets.length>5){
-    w.innerHTML=`<div class="warn">⚠ ${assets.length} Assets im Register. Das No-Touch-Register umfasst im typischen Anlagenbetrieb drei bis fünf Crown Jewels (Kap. 9.5). Je größer die veto-pflichtige Klasse, desto eher trägt der Einwand „Veto-Recht als Geschwindigkeitsbremse“. Prüfen Sie, ob die Liste zu großzügig ist.</div>`;
-  } else w.innerHTML='';
+  if(assets.length>5){w.innerHTML=`<div class="warn">${L().overwarn(assets.length)}</div>`;}
+  else w.innerHTML='';
 }
 
 /* ---- Operativer Aushang ---- */
 function joinList(arr,free){
-  const a=[...arr]; if(free&&free.trim())a.push(free.trim());
-  return a.length?a.join(' · '):'—';
+  const a=arr.map(item); if(free&&free.trim())a.push(free.trim());
+  return a.length?a.map(esc).join(' · '):'—';
 }
 function ketteText(a){
+  const T=L();
   const parts=a.kette.filter(k=>k.role||k.min).map(k=>{
     const who=k.who&&k.who.trim()?` (${esc(k.who.trim())})`:'';
-    return `<b>${esc(k.role||'?')}</b>${who} ${esc(k.min||'?')} Min`;
+    return `<b>${esc(item(k.role)||'?')}</b>${who} ${esc(k.min||'?')} ${T.uMin}`;
   });
-  parts.push('<b style="color:var(--veto)">danach Rückfall</b>');
+  parts.push(`<b style="color:var(--veto)">${T.pThenFall}</b>`);
   return parts.join(' → ');
 }
 function renderPoster(){
+  const T=L();
   const p=document.getElementById('poster');
-  const date=new Date().toLocaleDateString('de-DE');
+  const date=new Date().toLocaleDateString(T.locale);
   let rows='';
   if(!assets.length){
-    rows=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px;">Noch keine Crown Jewels erfasst.</td></tr>`;
+    rows=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px;">${T.pEmpty}</td></tr>`;
   } else {
     assets.forEach((a,i)=>{
       const cjid="CJ-"+String(i+1).padStart(3,'0');
-      const raci=`A: ${esc(a.acc||'—')} · R: ${esc(a.resp||'—')} · C: ${esc(a.cons||'—')} · I: ${esc(a.inf||'—')}`;
+      const raci=`A: ${esc(a.acc?item(a.acc):'—')} · R: ${esc(a.resp||'—')} · C: ${esc(a.cons||'—')} · I: ${esc(a.inf?item(a.inf):'—')}`;
       rows+=`<tr>
-        <td class="cjname">${cjid} · ${esc(a.name)}<div style="font-weight:400;color:var(--muted);font-size:9.5px;margin-top:3px">${esc(a.typ)} · RTO-Ziel ${esc(a.rto||'—')}</div>
+        <td class="cjname">${cjid} · ${esc(a.name)}<div style="font-weight:400;color:var(--muted);font-size:9.5px;margin-top:3px">${esc(item(a.typ))} · ${T.pRtoLbl} ${esc(a.rto||'—')}</div>
           <div style="font-weight:400;color:var(--muted);font-size:9px;margin-top:3px">${raci}</div></td>
         <td class="veto-list">${joinList(a.veto,a.vetoFree)}</td>
         <td>${joinList(a.gruende,a.gruendeFree)}</td>
@@ -372,27 +443,27 @@ function renderPoster(){
   }
   p.innerHTML=`
     <div class="poster-band">
-      <span class="t">No-Touch-Register</span>
-      <span class="s">Nicht ohne Freigabe des Anlagenbetriebs anrühren</span>
+      <span class="t">${T.pTitle}</span>
+      <span class="s">${T.pSub}</span>
     </div>
-    <div class="poster-intro"><b>Stopp im Playbook:</b> Die unten gelisteten Maßnahmen darf der SOC an diesen Assets <b>nicht eigenständig</b> ausführen. Benannte Rolle nach Eskalationskette rufen. Läuft die Frist ohne Antwort ab, greift der hinterlegte sichere Rückfall — keine unilaterale Isolation.</div>
+    <div class="poster-intro">${T.pIntro}</div>
     <table class="ptable">
       <thead><tr>
-        <th style="width:21%">Crown Jewel (RACI)</th>
-        <th style="width:19%">Veto-pflichtige Maßnahme</th>
-        <th style="width:20%">Warum kein Alleingang</th>
-        <th style="width:21%">Eskalationskette &amp; Fristen</th>
-        <th style="width:19%">Sicherer Rückfall</th>
+        <th style="width:21%">${T.pTh[0]}</th>
+        <th style="width:19%">${T.pTh[1]}</th>
+        <th style="width:20%">${T.pTh[2]}</th>
+        <th style="width:21%">${T.pTh[3]}</th>
+        <th style="width:19%">${T.pTh[4]}</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="freibox">
-      <div class="h">Vorab freigegeben — SOC handelt eigenständig, ohne Veto</div>
-      <ul>${VORAB_FREI.map(v=>`<li>${esc(v)}</li>`).join('')}</ul>
+      <div class="h">${T.pFreiH}</div>
+      <ul>${VORAB_FREI.map(v=>`<li>${esc(item(v))}</li>`).join('')}</ul>
     </div>
     <div class="poster-foot">
-      <span>Methodik: „ISMS für die Industrie“, Kap. 9.3–9.5 · RACI je Maßnahme nach Kap. 9.4<br><b style="color:var(--veto)">Sicherer Rückfall setzt autarken Inselbetrieb voraus → Island-Mode dokumentiert? (Kap. 24.3)</b></span>
-      <span>Stand: ${date} · sichtbar aushängen in SOC / Leitwarte / OT Security Lead</span>
+      <span>${T.pFoot1}</span>
+      <span>${T.pFoot2(date)}</span>
     </div>`;
 }
 
@@ -409,7 +480,7 @@ function updKette(i,ki,k,v){assets[i].kette[ki][k]=v;render();}
 function addKette(i){assets[i].kette.push({role:"",min:"",who:""});render();}
 function delKette(i,ki){assets[i].kette.splice(ki,1);render();}
 function del(i){assets.splice(i,1);render();}
-function addAsset(){assets.push(defAsset("Asset "+(assets.length+1)));render();}
+function addAsset(){assets.push(defAsset(L().assetN(assets.length+1)));render();}
 
 /* ---- Persistenz / Export ---- */
 function saveJSON(){
@@ -418,31 +489,29 @@ function saveJSON(){
 }
 function loadJSON(e){
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.assets){assets=d.assets;render();}}catch(err){alert('Datei nicht lesbar.');}};
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.assets){assets=d.assets;render();}}catch(err){alert(L().notRead);}};
   r.readAsText(f);e.target.value='';
 }
 function exportCSV(){
-  const head=["ID","Asset","Typ","RTO-Ziel","Veto-pflichtige Maßnahme","Warum kein Alleingang","Eskalationskette","Sicherer Rückfall","Accountable","Responsible","Consulted","Informed"];
+  const T=L();
   const rows=assets.map((a,i)=>{
-    const kette=a.kette.filter(k=>k.role||k.min).map(k=>`${k.role}${k.who?' ('+k.who+')':''} ${k.min}Min`).join(" -> ")+" -> Rückfall";
-    return ["CJ-"+String(i+1).padStart(3,'0'),a.name,a.typ,a.rto,
+    const kette=a.kette.filter(k=>k.role||k.min).map(k=>`${item(k.role)}${k.who?' ('+k.who+')':''} ${k.min}${T.uMin}`).join(" -> ")+" -> "+T.csvFall;
+    return ["CJ-"+String(i+1).padStart(3,'0'),a.name,item(a.typ),a.rto,
       joinPlain(a.veto,a.vetoFree),joinPlain(a.gruende,a.gruendeFree),kette,joinPlain(a.fallback,a.fallbackFree),
       a.acc,a.resp,a.cons,a.inf];
   });
-  const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(";")).join("\n");
-  // Vorab freigegebene Maßnahmen (global, SOC-eigenständig) für vollständigen Audit-Export anhängen
-  const freiBlock="\n\n"+[["Vorab freigegebene Maßnahme (SOC eigenständig, ohne Veto)"],...VORAB_FREI.map(v=>[v])]
+  const csv=[T.csvHead,...rows].map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const freiBlock="\n\n"+[[T.csvFrei],...VORAB_FREI.map(v=>[item(v)])]
     .map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\n");
   const blob=new Blob(["\ufeff"+csv+freiBlock],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='no-touch-register.csv';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=T.csvName;a.click();
 }
-function joinPlain(arr,free){const a=[...arr];if(free&&free.trim())a.push(free.trim());return a.join(" | ");}
+function joinPlain(arr,free){const a=arr.map(item);if(free&&free.trim())a.push(free.trim());return a.join(" | ");}
 
 function toggleA3(){
   document.body.classList.toggle('a3');
   const on=document.body.classList.contains('a3');
-  document.getElementById('a3state').textContent=on?'an':'aus';
-  // @page-Größe dynamisch setzen
+  document.getElementById('a3state').textContent=on?L().a3on:L().a3off;
   let st=document.getElementById('a3page');
   if(on){
     if(!st){st=document.createElement('style');st.id='a3page';document.head.appendChild(st);}
@@ -476,7 +545,9 @@ function seed(){
 
   assets=[s1,s2,s3];
 }
+try{if(new URLSearchParams(location.search).get('lang')==='en')lang='en';}catch(e){}
 seed();
+applyLang();
 render();
 </script>
 </body>
