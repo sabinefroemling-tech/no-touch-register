@@ -3,11 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interaktives OT-Security-Werkzeug: definiert veto-pflichtige Maßnahmen, Eskalationsketten und sichere Rückfall-Aktionen je Crown Jewel — als operativer Aushang. Läuft vollständig lokal im Browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230a0a33'/%3E%3Cpath d='M14 44 32 18l20 26z' fill='none' stroke='%237a5cff' stroke-width='2.5'/%3E%3Ccircle cx='32' cy='18' r='4' fill='%2341cdf4'/%3E%3Ccircle cx='14' cy='44' r='4' fill='%23d6246e'/%3E%3Ccircle cx='52' cy='44' r='4' fill='%232fe39b'/%3E%3C/svg%3E">
 <title>No-Touch-Register · Companion zum Buch</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap');
-:root{--red:#cc0000;--red-soft:#edd3d2;--ink:#1a1614;--paper:#faf8f5;--line:#d8d2ca;--muted:#6b635c;
---veto:#cc0000;--frei:#3a7d44;--fall:#1f6f9c;}
+/* Lokale Schriften — kein Abruf bei Google Fonts (vgl. LG München I, 3 O 17493/20) · SIL OFL 1.1 */
+@font-face{font-family:'Fraunces';src:url('fonts/fraunces-latin-opsz-normal.woff2') format('woff2-variations'),url('fonts/fraunces-latin-opsz-normal.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;}
+@font-face{font-family:'JetBrains Mono';src:url('fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations'),url('fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');font-weight:100 800;font-style:normal;font-display:swap;}
+:root{--red:#2240c4;--red-soft:#dfe4fa;--ink:#181840;--paper:#f5f6fb;--line:#d8dcef;--muted:#5d6184;
+--veto:#d6246e;--frei:#1d8a5f;--fall:#0e7e96;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'JetBrains Mono',monospace;background:var(--paper);color:var(--ink);line-height:1.5;
 background-image:radial-gradient(var(--line) .5px,transparent .5px);background-size:22px 22px;}
@@ -39,7 +43,7 @@ padding:10px 15px;border:1px solid var(--ink);background:var(--ink);color:#fff;c
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:24px 0 0;align-items:center;}
 .legend{font-size:11px;color:var(--muted);margin:8px 0;}
 .pill{display:inline-block;padding:1px 7px;font-weight:600;color:#fff;margin-right:3px;font-size:10px;}
-.warn{background:#fff7e6;border:1px solid #c9820a;color:#8a5a00;font-size:11.5px;padding:9px 12px;margin:10px 0;}
+.warn{background:#fff7e6;border:1px solid #b97e0a;color:#7a5306;font-size:11.5px;padding:9px 12px;margin:10px 0;}
 details{margin:12px 0;background:#fff;border:1px solid var(--line);padding:10px 14px;}
 summary{cursor:pointer;font-weight:600;font-size:12px;}
 details p,details li{font-size:11.5px;color:var(--muted);margin-top:6px;}
@@ -53,7 +57,7 @@ footer{margin-top:34px;border-top:1px solid var(--line);padding-top:15px;font-si
 .cardhead .cjid{font-size:10px;letter-spacing:1px;color:var(--red-soft);font-weight:600;}
 .cardhead input{flex:1;border:0;background:transparent;color:#fff;font-family:inherit;font-weight:600;font-size:13px;}
 .cardhead input:focus{outline:1px solid var(--red);}
-.cardhead select{background:#2a2420;color:#fff;border:1px solid #4a423c;}
+.cardhead select{background:#23234d;color:#fff;border:1px solid #3f4470;}
 .cardbody{display:grid;grid-template-columns:1fr 1fr;gap:0;}
 @media(max-width:760px){.cardbody{grid-template-columns:1fr}}
 .fld{border:1px solid var(--line);border-top:0;padding:9px 12px;}
@@ -92,7 +96,7 @@ footer{margin-top:34px;border-top:1px solid var(--line);padding-top:15px;font-si
 .freibox ul{margin-left:16px;color:var(--muted);}
 .poster-foot{padding:8px 16px;border-top:1px solid var(--line);font-size:9.5px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
 
-.esc input.min.bad{border-color:var(--veto);background:#fdeceb;color:var(--veto);font-weight:600;}
+.esc input.min.bad{border-color:var(--veto);background:#fbe3ee;color:var(--veto);font-weight:600;}
 .kettewarn{font-size:10.5px;color:var(--veto);margin:4px 0 2px;display:flex;align-items:center;gap:5px;}
 
 .print-only{display:none;}
@@ -110,17 +114,66 @@ body.a3 .poster{font-size:13px;}
 .langsw button{font-family:inherit;font-size:11px;font-weight:600;padding:5px 11px;border:0;background:transparent;color:var(--ink);cursor:pointer;letter-spacing:1px;}
 .langsw button.on{background:var(--ink);color:#fff;}
 @media print{.langsw{display:none}}
+
+/* ================= Reihen-Design v2 (Buchcover) ================= */
+header.sf-cover{position:relative;overflow:hidden;background:#0a0a33;border-bottom:0;padding:0;margin:0;}
+.sf-cover svg.plx{position:absolute;inset:0;width:100%;height:100%;}
+.sf-cover-in{position:relative;max-width:1180px;margin:0 auto;padding:46px 20px 34px;}
+.sf-cover .kicker{color:#41cdf4;}
+.sf-cover h1{color:#fff;text-shadow:0 1px 14px rgba(6,6,31,.55);}
+.sf-cover .sub{color:#ccd1f2;}
+.sf-cover .sig{color:#ff5fa8;}
+.sf-cover .ref{color:#9aa0d6;}
+.sf-cover .langsw{position:absolute;top:18px;right:20px;border:1px solid rgba(232,234,255,.45);}
+.sf-cover .langsw button{color:#e8eaff;}
+.sf-cover .langsw button.on{background:#e8eaff;color:#10104a;}
+.sf-rule{height:4px;background:linear-gradient(90deg,#d6246e,#7a5cff 35%,#41cdf4 72%,#2fe39b);}
+.wrap{padding-top:26px;}
+.sf-glance{background:#fff;border:1px solid var(--line);border-left:4px solid var(--red);padding:16px 18px 8px;margin:6px 0 20px;}
+.sf-glh{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:8px;}
+.sf-glg{display:grid;grid-template-columns:1fr;margin:0;}
+.sf-glg>div{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:7px 0;border-top:1px dashed var(--line);}
+.sf-glg>div:first-child{border-top:0;}
+.sf-glg dt{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;padding-top:2px;}
+.sf-glg dd{font-size:12.5px;margin:0;line-height:1.55;}
+.sf-legal{margin-top:30px;border-top:1px solid var(--line);padding-top:14px;font-size:10.5px;color:var(--muted);line-height:1.65;max-width:980px;}
+.sf-legal a{color:var(--muted);}
+.sf-footband{position:relative;overflow:hidden;background:#0a0a33;margin-top:42px;}
+.sf-footband svg.plx{position:absolute;inset:0;width:100%;height:100%;opacity:.9;}
+.sf-foot-in{position:relative;max-width:1180px;margin:0 auto;padding:26px 20px 30px;}
+.sf-foot-in footer{margin:0;border:0;padding:0;font-size:11px;color:#c7cbee;line-height:1.7;}
+.sf-foot-in footer b{color:#fff;}
+.sf-foot-in footer a{color:#9fd9f6;}
+.sf-colo{margin-top:14px;padding-top:12px;border-top:1px solid rgba(199,203,238,.28);font-size:10.5px;color:#9aa0d6;line-height:1.9;}
+.sf-colo a{color:#c7cbee;}
+.sf-printhead{display:none;}
+@keyframes sfPulse{0%,100%{opacity:.55}50%{opacity:1}}
+.plx .ndp{animation:sfPulse 5s ease-in-out infinite;}
+@media (prefers-reduced-motion:reduce){.plx .ndp{animation:none;}}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+@media print{
+ .noprint,header.sf-cover,.sf-rule,.sf-glance,.sf-legal,.sf-footband{display:none!important}
+ .sf-printhead{display:block;text-align:center;font-size:10px;color:#000;margin-bottom:6px;}
+}
+@media (max-width:620px){
+ .sf-cover-in{padding:40px 16px 26px;}
+ .sf-glg>div{grid-template-columns:1fr;gap:2px;}
+ .sf-cover .langsw{top:12px;right:12px;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header class="noprint" style="position:relative">
+<header class="sf-cover noprint"><svg class="plx" viewBox="0 0 1600 440" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="g27" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06061f"/><stop offset=".55" stop-color="#10104a"/><stop offset="1" stop-color="#0a0a33"/></linearGradient></defs><rect width="1600" height="440" fill="url(#g27)"/><path d="M19 124L-60 130L-60 -50ZM457 377L538 390L585 490Z" fill="#1650a2" opacity="0.24"/><path d="M1452 326L1583 275L1660 490ZM1446 240L1365 119L1577 111ZM1274 42L1270 5L1373 11Z" fill="#16327f" opacity="0.24"/><path d="M170 181L128 136L234 137ZM1389 394L1452 326L1445 490ZM619 227L673 215L695 249Z" fill="#3c30ab" opacity="0.08"/><path d="M1660 130L1584 19L1660 -50ZM1271 411L1317 424L1261 421Z" fill="#0873b0" opacity="0.24"/><path d="M1445 -50L1373 11L1230 -50ZM1342 424L1389 394L1445 490ZM702 97L623 117L700 57ZM1161 337L1331 304L1186 374ZM480 312L457 377L436 306Z" fill="#16327f" opacity="0.08"/><path d="M1015 -50L1160 5L1028 59ZM1258 164L1365 119L1325 192ZM1274 42L1358 100L1258 164ZM929 81L873 28L1015 -50Z" fill="#2d3eaa" opacity="0.08"/><path d="M1274 42L1373 11L1371 54ZM623 117L645 145L594 117ZM628 405L798 380L800 490Z" fill="#16327f" opacity="0.15"/><path d="M1452 326L1446 240L1583 275ZM193 359L188 405L71 371ZM1358 100L1274 42L1371 54ZM1390 238L1446 240L1452 326Z" fill="#3c30ab" opacity="0.15"/><path d="M332 427L249 400L308 229ZM1373 11L1270 5L1230 -50ZM873 28L819 43L852 7ZM1331 304L1310 367L1186 374Z" fill="#1650a2" opacity="0.15"/><path d="M188 405L193 359L249 400ZM920 92L945 152L818 89ZM1390 238L1373 193L1446 240ZM436 306L379 433L332 427ZM1337 328L1310 367L1331 304ZM537 363L572 310L605 343Z" fill="#693eb8" opacity="0.24"/><path d="M1270 5L1193 67L1160 5ZM1358 100L1365 119L1258 164ZM1365 341L1390 238L1452 326Z" fill="#41cdf4" opacity="0.12"/><path d="M726 56L700 57L641 5ZM996 221L921 247L990 194ZM852 7L819 43L800 -50ZM798 380L892 415L800 490ZM1205 197L1161 337L1134 284Z" fill="#2d3eaa" opacity="0.24"/><path d="M1400 49L1373 11L1445 -50ZM819 43L766 48L800 -50ZM538 390L628 405L585 490ZM480 312L537 363L457 377Z" fill="#693eb8" opacity="0.08"/><path d="M1358 100L1400 49L1365 119ZM818 89L945 152L825 226ZM921 247L1050 325L902 344ZM572 310L535 268L619 227Z" fill="#0873b0" opacity="0.15"/><path d="M1526 35L1584 19L1577 111Z" fill="#7a5cff" opacity="0.12"/><path d="M1519 31L1526 35L1577 111ZM719 66L726 56L766 48ZM1161 337L1090 376L1131 322ZM1271 411L1261 421L1186 374Z" fill="#2d3eaa" opacity="0.15"/><path d="M1317 424L1342 424L1230 490Z" fill="#d6246e" opacity="0.2"/><path d="M818 89L819 43L879 49ZM798 380L837 359L892 415Z" fill="#693eb8" opacity="0.15"/><path d="M1053 192L1166 203L1134 284ZM1053 192L996 221L990 194ZM1331 304L1205 197L1325 192Z" fill="#3c30ab" opacity="0.24"/><path d="M1131 322L1050 325L1134 284ZM1050 325L1053 192L1134 284ZM1090 376L1161 337L1186 374ZM1310 367L1271 411L1186 374Z" fill="#0873b0" opacity="0.08"/><path d="M1365 341L1337 328L1331 304Z" fill="#41cdf4" opacity="0.2"/><path d="M1342 424 1317 424 M1452 326 1583 275 M1270 5 1193 67 M1166 203 1053 192 M1230 -50 1445 -50 M1365 341 1389 394 M50 373 155 490 M929 81 920 92 M397 135 436 306 M1015 490 1230 490 M1660 490 1660 310 M457 377 538 390 M645 145 702 97 M902 344 796 275 M798 380 628 405 M1193 67 1160 5 M902 344 1050 325 M1186 374 1126 433 M825 226 945 152 M1138 142 1205 197 M1400 49 1445 -50 M1445 -50 1660 -50 M852 7 819 43 M996 221 921 247 M1452 326 1660 490 M1192 95 1138 142 M796 275 921 247 M1400 49 1365 119 M1270 5 1373 11 M818 89 804 70 M628 405 800 490 M819 43 804 70 M1050 325 1090 376 M1583 275 1660 310 M1584 19 1660 130 M623 117 641 5 M1271 411 1310 367 M1331 304 1161 337 M1126 433 1086 403 M1053 192 1134 284 M1161 337 1090 376 M1519 31 1584 19 M489 303 524 256 M1331 304 1310 367 M1270 5 1160 5 M945 152 921 247 M1028 59 1094 85 M524 256 616 214 M1161 337 1131 322 M929 81 1010 114" stroke="#9fb4ff" stroke-width=".7" fill="none" opacity="0.12"/><path d="M1126 433 1015 490 M837 359 902 344 M537 363 605 343 M719 66 766 48 M1317 424 1310 367 M1526 35 1584 19 M1134 284 1205 197 M1446 240 1390 238 M619 227 535 268 M538 390 585 490 M873 28 879 49 M1186 374 1161 337 M1577 111 1584 19 M619 227 673 215 M1577 111 1400 49 M1342 424 1445 490 M572 310 537 363 M1166 203 1205 197 M1331 304 1337 328 M1331 304 1205 197 M1358 100 1365 119 M1373 11 1445 -50 M956 430 800 490 M1446 240 1583 275 M1400 49 1371 54 M1193 67 1274 42 M1519 31 1577 111 M1010 114 990 194 M1134 284 1050 325 M1358 100 1274 42 M1053 192 1094 85 M1358 100 1371 54 M1342 424 1310 367 M1342 424 1230 490 M695 249 796 275 M1086 403 1090 376 M1271 411 1317 424 M234 137 271 130 M1365 341 1337 328 M1166 203 1138 142 M1389 394 1342 424 M1258 164 1274 42 M1660 -50 1660 130" stroke="#9fb4ff" stroke-width=".7" fill="none" opacity="0.2"/><path d="M1365 341 1331 304 M1186 374 1090 376 M929 81 873 28 M1028 59 1160 5 M345 133 383 70 M308 229 193 359 M956 430 1015 490 M1577 111 1365 119 M1519 31 1526 35 M825 226 818 89 M1365 341 1310 367 M673 215 645 145 M1186 374 1271 411 M766 48 726 56 M1131 322 1090 376 M1161 337 1134 284 M1390 238 1325 192 M480 312 436 306 M1126 433 1230 490 M1205 197 1325 192 M825 226 921 247 M852 7 1015 -50 M645 145 616 214 M929 81 945 152 M641 5 585 -50 M1261 421 1230 490 M798 380 796 275 M50 151 -60 130 M1389 394 1310 367 M572 310 605 343 M990 194 921 247 M766 48 800 -50 M1010 114 1094 85 M902 344 956 430 M1358 100 1400 49 M1050 325 996 221 M892 415 800 490 M1373 193 1325 192 M1452 326 1365 341 M1160 5 1015 -50 M1261 421 1317 424 M1160 5 1094 85 M800 490 1015 490 M945 152 990 194 M725 147 749 130 M1053 192 1010 114 M929 81 1015 -50 M1519 31 1400 49 M1192 95 1205 197 M1270 5 1274 42 M457 377 370 490" stroke="#9fb4ff" stroke-width=".7" fill="none" opacity="0.06"/><circle class="ndp" cx="308" cy="229" r="3.2" fill="#41cdf4"/><circle cx="308" cy="229" r="8" fill="#41cdf4" opacity=".13"/><circle cx="535" cy="268" r="2.4" fill="#7a5cff"/><circle cx="535" cy="268" r="6" fill="#7a5cff" opacity=".13"/><circle class="ndp" cx="1205" cy="197" r="2.5" fill="#2fe39b"/><circle cx="1205" cy="197" r="6" fill="#2fe39b" opacity=".13"/><circle cx="1310" cy="367" r="2.6" fill="#d6246e"/><circle cx="1310" cy="367" r="7" fill="#d6246e" opacity=".13"/><circle class="ndp" cx="700" cy="57" r="2.3" fill="#41cdf4"/><circle cx="700" cy="57" r="6" fill="#41cdf4" opacity=".13"/><circle cx="1584" cy="19" r="2.3" fill="#d6246e"/><circle cx="1584" cy="19" r="6" fill="#d6246e" opacity=".13"/><circle class="ndp" cx="605" cy="343" r="2.7" fill="#2fe39b"/><circle cx="605" cy="343" r="7" fill="#2fe39b" opacity=".13"/><circle cx="1389" cy="394" r="2.3" fill="#41cdf4"/><circle cx="1389" cy="394" r="6" fill="#41cdf4" opacity=".13"/><circle class="ndp" cx="1331" cy="304" r="2.9" fill="#d6246e"/><circle cx="1331" cy="304" r="7" fill="#d6246e" opacity=".13"/><path d="M1577 111h.1M1192 95h.1M996 221h.1M623 117h.1M480 312h.1M1373 193h.1M1390 238h.1M1028 59h.1M1400 49h.1M929 81h.1M990 194h.1M1161 337h.1M1160 5h.1M1090 376h.1M1166 203h.1M1519 31h.1M1086 403h.1M397 135h.1M616 214h.1M1371 54h.1M1452 326h.1M892 415h.1M1053 192h.1M1138 142h.1M1126 433h.1M1274 42h.1M71 371h.1M818 89h.1M766 48h.1M725 147h.1M1325 192h.1M1271 411h.1M873 28h.1M920 92h.1M1317 424h.1M1365 341h.1M1446 240h.1M1373 11h.1M1261 421h.1M1526 35h.1M379 433h.1M902 344h.1M193 359h.1M798 380h.1" stroke="#cfd8ff" stroke-width="2.4" stroke-linecap="round" opacity=".55" fill="none"/></svg><div class="sf-cover-in">
   <div class="langsw noprint"><button id="lde" class="on" onclick="setLang('de')">DE</button><button id="len" onclick="setLang('en')">EN</button></div>
   <div class="kicker" data-t="kicker"></div>
   <h1 data-t="h1"></h1>
   <p class="sub" data-t="sub"></p>
   <p class="ref" data-t="ref"></p>
-</header>
+</div></header>
+<div class="sf-rule noprint" aria-hidden="true"></div>
+<div class="wrap">
+<section class="sf-glance noprint" data-t="sfGlance"></section>
+
 
 <details class="noprint">
 <summary data-t="dsum"></summary>
@@ -148,7 +201,7 @@ body.a3 .poster{font-size:13px;}
 <div class="print-only" style="text-align:center;font-size:10px;color:#000;margin-bottom:4px;" data-t="printline"></div>
 <div class="poster" id="poster"></div>
 
-<div class="warn noprint" style="margin-top:22px;border-color:var(--red);background:#fdeceb;" data-t="bigwarn"></div>
+<div class="warn noprint" style="margin-top:22px;border-color:var(--red);background:#fbe3ee;" data-t="bigwarn"></div>
 
 <div class="toolbar noprint">
   <button class="btn ghost" onclick="saveJSON()" data-t="bsave"></button>
@@ -159,8 +212,9 @@ body.a3 .poster{font-size:13px;}
   <button class="btn" onclick="window.print()" data-t="bprint"></button>
 </div>
 
-<footer class="noprint" data-t="foot"></footer>
+<section class="sf-legal noprint" id="sf-legal" data-t="sfLegal"></section>
 </div>
+<div class="sf-footband noprint"><svg class="plx" viewBox="0 0 1600 150" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="g43" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06061f"/><stop offset=".55" stop-color="#10104a"/><stop offset="1" stop-color="#0a0a33"/></linearGradient></defs><rect width="1600" height="150" fill="url(#g43)"/><path d="M1474 87L1660 200L1445 200ZM1368 127L1333 141L1321 100ZM634 145L795 146L800 200Z" fill="#3c30ab" opacity="0.15"/><path d="M1660 200L1474 87L1660 117ZM947 14L945 34L819 78ZM1513 51L1514 35L1540 14Z" fill="#3c30ab" opacity="0.24"/><path d="M1230 200L1333 141L1445 200ZM1193 49L1181 30L1180 7Z" fill="#693eb8" opacity="0.24"/><path d="M1445 -50L1299 39L1230 -50Z" fill="#2d3eaa" opacity="0.08"/><path d="M1299 39L1445 -50L1434 4Z" fill="#16327f" opacity="0.24"/><path d="M1015 200L1070 137L1230 200Z" fill="#1650a2" opacity="0.24"/><path d="M1180 7L1035 3L1015 -50ZM1318 129L1233 135L1321 100ZM1070 137L1223 137L1230 200ZM1474 87L1388 76L1434 4ZM1445 -50L1514 35L1434 4Z" fill="#1650a2" opacity="0.08"/><path d="M1035 3L947 14L1015 -50ZM1513 51L1540 14L1570 13Z" fill="#2d3eaa" opacity="0.15"/><path d="M1223 137L1233 135L1230 200Z" fill="#d6246e" opacity="0.2"/><path d="M1388 76L1299 39L1434 4ZM1514 35L1474 87L1434 4Z" fill="#0873b0" opacity="0.24"/><path d="M458 88L451 74L471 66Z" fill="#693eb8" opacity="0.08"/><path d="M1009 128L1047 119L1070 137Z" fill="#41cdf4" opacity="0.2"/><path d="M1514 35L1513 51L1474 87Z" fill="#0873b0" opacity="0.08"/><path d="M1193 49L1219 78L1148 65Z" fill="#0873b0" opacity="0.15"/><path d="M1299 39L1193 49L1230 -50Z" fill="#d6246e" opacity="0.12"/><path d="M615 41 619 21 M1148 65 1070 137 M1035 3 1148 65 M267 22 308 55 M871 105 819 96 M673 23 701 71 M1434 4 1445 -50 M1560 6 1570 13 M1009 128 871 105 M156 124 165 32 M1540 14 1560 6 M1148 65 1180 7 M819 78 871 105 M344 126 436 117 M598 117 508 148 M1180 7 1230 -50 M1193 49 1219 78 M1560 6 1445 -50" stroke="#9fb4ff" stroke-width=".7" fill="none" opacity="0.2"/><path d="M1318 129 1230 200 M344 126 155 200 M370 -50 585 -50 M1513 51 1474 87 M1299 39 1434 4 M616 123 585 200 M1015 200 1230 200 M819 78 945 34 M451 74 471 66 M585 23 588 45 M1570 13 1660 117 M344 126 156 124 M1223 137 1070 137 M1035 3 945 34 M871 105 800 200 M598 117 588 45 M1047 119 1035 3 M1035 3 1015 -50 M795 146 819 96 M1540 14 1445 -50 M1180 7 1015 -50 M471 66 588 45 M795 146 701 71 M795 146 800 200 M1434 4 1514 35 M1299 39 1445 -50 M436 117 508 148 M616 123 634 145 M585 23 615 41 M451 74 344 126" stroke="#9fb4ff" stroke-width=".7" fill="none" opacity="0.12"/><path d="M1148 65 1219 78 M1299 39 1219 78 M1321 100 1368 127 M1148 65 1181 30 M1180 7 1181 30 M585 23 585 -50 M1318 129 1321 100 M1570 13 1660 33 M1148 65 1193 49 M1299 39 1193 49 M1388 76 1434 4 M267 22 230 20 M1333 141 1321 100 M1070 137 1015 200 M1660 200 1660 117 M165 32 230 20 M947 14 1015 -50" stroke="#9fb4ff" stroke-width=".7" fill="none" opacity="0.06"/><circle class="ndp" cx="1180" cy="7" r="2.8" fill="#d6246e"/><circle cx="1180" cy="7" r="7" fill="#d6246e" opacity=".13"/><circle cx="616" cy="123" r="3.1" fill="#d6246e"/><circle cx="616" cy="123" r="8" fill="#d6246e" opacity=".13"/><circle class="ndp" cx="1560" cy="6" r="2.2" fill="#2fe39b"/><circle cx="1560" cy="6" r="6" fill="#2fe39b" opacity=".13"/><circle cx="1321" cy="100" r="2.7" fill="#7a5cff"/><circle cx="1321" cy="100" r="7" fill="#7a5cff" opacity=".13"/><circle class="ndp" cx="619" cy="21" r="2.5" fill="#7a5cff"/><circle cx="619" cy="21" r="7" fill="#7a5cff" opacity=".13"/><circle cx="947" cy="14" r="2.7" fill="#d6246e"/><circle cx="947" cy="14" r="7" fill="#d6246e" opacity=".13"/><circle class="ndp" cx="1233" cy="135" r="2.8" fill="#7a5cff"/><circle cx="1233" cy="135" r="7" fill="#7a5cff" opacity=".13"/><circle cx="508" cy="148" r="2.8" fill="#7a5cff"/><circle cx="508" cy="148" r="7" fill="#7a5cff" opacity=".13"/><circle class="ndp" cx="1333" cy="141" r="2.6" fill="#41cdf4"/><circle cx="1333" cy="141" r="7" fill="#41cdf4" opacity=".13"/><path d="M945 34h.1M1299 39h.1M819 78h.1M1035 3h.1M819 96h.1M585 23h.1M1368 127h.1M230 20h.1M156 124h.1M1219 78h.1M1070 137h.1M1148 65h.1M1223 137h.1M1318 129h.1M701 71h.1M1570 13h.1M671 61h.1M1009 128h.1M1474 87h.1M374 2h.1M1388 76h.1" stroke="#cfd8ff" stroke-width="2.4" stroke-linecap="round" opacity=".55" fill="none"/></svg><div class="sf-foot-in"><footer data-t="foot"></footer><div class="sf-colo" data-t="sfColo"></div></div></div>
 
 <script>
 /* ---- Kanonische Stammdaten (DE) — Schlüssel für Speicherung & CJ-Import ---- */
@@ -200,6 +254,9 @@ de:{
  printline:"No-Touch-Register · operativer Aushang · generiert mit dem Companion zum Buch „ISMS für die Industrie\u201c",
  bigwarn:"<b>⚠ Der Wert liegt nicht in der Grafik, sondern in der Disziplin davor (Kap. 9.3/9.4).</b> Dieses Werkzeug ist das sichtbare Endprodukt eines methodisch sauberen Prozesses — nicht der Prozess selbst. Wer welches Asset mit welcher Frist und welchem benannten Eskalations-Empfänger auf die Liste setzt, ist Ergebnis der Crown-Jewels-Analyse (Kap. 3.5), eines Workshops mit der Anlagenleitung (Kap. 9.6, Schritt 1) und der RACI-Entscheidungen (Kap. 9.4). Ein ausgefüllter Aushang ohne diesen vorausgehenden Abgleich erzeugt Scheinsicherheit. Der zweite, ebenso wichtige Schritt: den Stopp im real ausgeführten IR-Playbook verankern (Kap. 9.6, Schritt 2) und die OT-Spalte der RACI-Matrix korrigieren (Schritt 3).",
  bsave:"Speichern (JSON)",bload:"Laden (JSON)",bcsv:"Export CSV",ba3:"A3-quer:",a3on:"an",a3off:"aus",bprint:"Aushang drucken / PDF",
+ sfGlance:"<div class='sf-glh'>Auf einen Blick</div><dl class='sf-glg'><div><dt>Zweck</dt><dd>Legt vor dem Ernstfall fest, welche Eingriffe an kritischen OT-Assets veto-pflichtig sind — damit im Vorfall niemand unilateral abschaltet.</dd></div><div><dt>Bedienung</dt><dd>Crown Jewels importieren oder direkt anlegen; je Asset Veto-Maßnahmen, Begründung, Eskalationskette mit Fristen und die sichere Rückfall-Aktion festlegen. Stände als JSON sichern.</dd></div><div><dt>Ergebnis</dt><dd>Ein operativer Aushang für Leitwarte und SOC (Druck, auch A3) plus Register als CSV — die Seite, die in fast jedem IR-Playbook fehlt.</dd></div></dl>",
+ sfLegal:"<b>Hinweise zur Nutzung (Disclaimer).</b> Dieses Werkzeug ist eine methodische Arbeitshilfe zur Selbsteinschätzung und Dokumentation. Es ersetzt keine individuelle Sicherheits- oder Rechtsberatung, keine Risikoanalyse und keine technische Verifikation vor Ort. Normverweise dienen der Orientierung und stellen keine Konformitätsaussage dar. Die Ergebnisse beruhen ausschließlich auf den eigenen Eingaben; alle Angaben ohne Gewähr. Die Nutzung erfolgt in eigener Verantwortung; eine Haftung für Richtigkeit, Vollständigkeit, Aktualität und Eignung für einen bestimmten Zweck ist — soweit gesetzlich zulässig — ausgeschlossen.",
+ sfColo:"© Sabine Frömling · <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/deed.de' rel='license'>CC BY-NC-ND 4.0</a> · Companion-Reihe: <a href='https://sabinefroemling-tech.github.io/crown-jewels-companion/'>Crown-Jewels</a> · <a href='https://sabinefroemling-tech.github.io/jit-fernwartung-fahrplan/'>JIT-Fernwartungs-Fahrplan</a> · <a href='https://sabinefroemling-tech.github.io/ot-remote-access-compass/'>Fernzugriffs-Kompass</a> · <a href='https://sabinefroemling-tech.github.io/ot-tabletop-generator/'>Tabletop-Generator</a> · <a href='https://sabinefroemling-tech.github.io/island-mode-72h-stresstest/'>Island-Mode-72h-Stresstest</a>",
  foot:"Methodik nach „ISMS für die Industrie\u201c, Kap. 9. Veto-pflichtig ist ausschließlich die schmale Klasse von Maßnahmen, die einen ungeplanten Stillstand eines kontinuierlichen Prozesses auslösen können — Detektion, Analyse, Beweissicherung und Monitoring-Verstärkung bleiben jederzeit beim SOC (Kap. 9.5). Schnittstellen: Kap. 3.5 (Crown-Jewels-Analyse, Datenbasis), Kap. 8 (Vorfallmanagement, gespiegelte Eskalationsketten), Kap. 24.3 (Island-Mode als Voraussetzung für definierte Sicherer-Zustand-Aktionen).<br>Begleitwerkzeug zur Workshop-Strukturierung — ersetzt nicht den Workshop mit Anlagenleitung, SOC und ISMS-Verantwortlichen.<br><span class='sig'>§</span> Sabine Frömling — Independent OT-Security &amp; Compliance Advisory.",
  empty:"Noch keine Assets. Crown Jewels importieren oder manuell anlegen — Ziel sind 3–5 kritische Assets.",
  impNone:"Keine Crown Jewels (4 in ≥2 Kriterien) in der Datei gefunden.",
@@ -240,6 +297,9 @@ en:{
  printline:"No-touch register · operational poster · generated with the companion to the book \u201cISMS für die Industrie\u201d",
  bigwarn:"<b>⚠ The value is not in the graphic but in the discipline before it (ch. 9.3/9.4).</b> This tool is the visible end product of a methodically sound process — not the process itself. Which asset goes on the list, with which deadline and which named escalation recipient, is the outcome of the crown jewels analysis (ch. 3.5), a workshop with plant management (ch. 9.6, step 1) and the RACI decisions (ch. 9.4). A filled-in poster without this preceding alignment creates a false sense of security. The second, equally important step: anchor the stop in the IR playbook actually executed (ch. 9.6, step 2) and correct the OT column of the RACI matrix (step 3).",
  bsave:"Save (JSON)",bload:"Load (JSON)",bcsv:"Export CSV",ba3:"A3 landscape:",a3on:"on",a3off:"off",bprint:"Print poster / PDF",
+ sfGlance:"<div class='sf-glh'>At a glance</div><dl class='sf-glg'><div><dt>Purpose</dt><dd>Defines, before the incident, which actions on critical OT assets are veto-bound — so nobody shuts anything down unilaterally during an incident.</dd></div><div><dt>How to use</dt><dd>Import crown jewels or add assets directly; per asset, define veto-bound actions, rationale, the escalation chain with deadlines and the safe fallback action. Save states as JSON.</dd></div><div><dt>Result</dt><dd>An operational poster for the control room and SOC (printable, A3 supported) plus the register as CSV — the page missing from almost every IR playbook.</dd></div></dl>",
+ sfLegal:"<b>Usage notes (disclaimer).</b> This tool is a methodical working aid for self-assessment and documentation. It replaces neither individual security or legal advice, nor a risk analysis, nor on-site technical verification. References to standards are for orientation and are not a statement of conformity. Results are based solely on your own input; all information is provided without warranty. Use is at your own responsibility; liability for accuracy, completeness, currency and fitness for a particular purpose is — to the extent legally permissible — excluded.",
+ sfColo:"© Sabine Frömling · <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/deed.en' rel='license'>CC BY-NC-ND 4.0</a> · Companion series: <a href='https://sabinefroemling-tech.github.io/crown-jewels-companion/'>Crown Jewels</a> · <a href='https://sabinefroemling-tech.github.io/jit-fernwartung-fahrplan/'>JIT Remote-Maintenance Roadmap</a> · <a href='https://sabinefroemling-tech.github.io/ot-remote-access-compass/'>Remote-Access Compass</a> · <a href='https://sabinefroemling-tech.github.io/ot-tabletop-generator/'>Tabletop Generator</a> · <a href='https://sabinefroemling-tech.github.io/island-mode-72h-stresstest/'>Island-Mode 72h Stress Test</a>",
  foot:"Methodology per \u201cISMS für die Industrie\u201d, ch. 9. Veto-bound is solely the narrow class of actions that can trigger an unplanned shutdown of a continuous process — detection, analysis, evidence preservation and monitoring reinforcement remain with the SOC at all times (ch. 9.5). Interfaces: ch. 3.5 (crown jewels analysis, data basis), ch. 8 (incident management, mirrored escalation chains), ch. 24.3 (island mode as a precondition for defined safe-state actions).<br>Companion for structuring the workshop — it does not replace the workshop with plant management, SOC and ISMS owners.<br><span class='sig'>§</span> Sabine Frömling — Independent OT Security &amp; Compliance Advisory.",
  empty:"No assets yet. Import crown jewels or create them manually — the target is 3–5 critical assets.",
  impNone:"No crown jewels (4 in ≥2 criteria) found in the file.",
